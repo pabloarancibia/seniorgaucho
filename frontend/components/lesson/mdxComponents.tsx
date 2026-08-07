@@ -7,6 +7,7 @@ interface QuizCardMdxProps {
   questionId: string;
   question: string;
   correctOption: string;
+  explanation?: string;
   children: ReactNode;
 }
 

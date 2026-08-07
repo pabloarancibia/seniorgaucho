@@ -8,6 +8,8 @@ interface QuizCardProps {
   questionId: string;
   question: string;
   correctOption: string;
+  /** Texto que se muestra debajo de la respuesta una vez seleccionada. */
+  explanation?: string;
   /** <QuizOption value="...">Label</QuizOption> por cada alternativa. */
   children: ReactNode;
   /** Inyectado por MdxContent, no lo pasa el autor del MDX. */
@@ -20,7 +22,7 @@ interface QuizCardProps {
  * default (el contenido viene de la DB, no de archivos confiables del repo),
  * así que un array/objeto en un atributo se descartaría en runtime.
  */
-export function QuizCard({ questionId, question, correctOption, children, lessonId }: QuizCardProps) {
+export function QuizCard({ questionId, question, correctOption, explanation, children, lessonId }: QuizCardProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -66,7 +68,12 @@ export function QuizCard({ questionId, question, correctOption, children, lesson
           });
         })}
       </div>
-      {selected && <p className="mt-3 text-sm text-fg-muted">{selected === correctOption ? "✅ Correcto" : "❌ Incorrecto"}</p>}
+      {selected && (
+        <div className="mt-3 space-y-1 text-sm">
+          <p className="text-fg-muted">{selected === correctOption ? "✅ Correcto" : "❌ Incorrecto"}</p>
+          {explanation && <p className="text-fg-muted">{explanation}</p>}
+        </div>
+      )}
     </div>
   );
 }
