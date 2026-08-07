@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/lib/theme/ThemeProvider";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { usePyodide } from "@/lib/execution/usePyodide";
 import { useWebContainer } from "@/lib/execution/useWebContainer";
@@ -26,7 +26,7 @@ interface CodeEditorPanelProps {
 
 export function CodeEditorPanel({ lessonId }: CodeEditorPanelProps) {
   const { t } = useLocale();
-  const { resolvedTheme } = useTheme();
+  const { theme } = useTheme();
   const pyodide = usePyodide();
   const webcontainer = useWebContainer();
 
@@ -116,7 +116,7 @@ export function CodeEditorPanel({ lessonId }: CodeEditorPanelProps) {
           height="100%"
           language={activeLanguage}
           value={codeByLanguage[activeLanguage]}
-          theme={resolvedTheme === "dark" ? "vs-dark" : "light"}
+          theme={theme === "dark" ? "vs-dark" : "light"}
           onChange={(value) => setCodeByLanguage((prev) => ({ ...prev, [activeLanguage]: value ?? "" }))}
           options={{ minimap: { enabled: false }, fontSize: 14, automaticLayout: true }}
         />

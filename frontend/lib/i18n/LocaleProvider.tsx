@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { type Locale, dictionaries, locales } from "@/lib/i18n/dictionaries";
 
 const STORAGE_KEY = "seniorgaucho:locale";
@@ -17,9 +17,11 @@ const LocaleContext = createContext<LocaleContextValue | null>(null);
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("es");
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     // localStorage no existe en el server; sincronizar el locale persistido
-    // solo puede pasar acá, después del render inicial en "es".
+    // solo puede pasar acá, después del render inicial en "es". useLayoutEffect
+    // (no useEffect) para que corra antes del primer paint y minimizar el
+    // flash de idioma si el usuario tiene "en" guardado.
     const stored = window.localStorage.getItem(STORAGE_KEY);
     if (stored && locales.includes(stored as Locale)) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- sync inicial desde localStorage, no un external store subscribible
