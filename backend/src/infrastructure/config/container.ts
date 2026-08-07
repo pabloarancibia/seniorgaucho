@@ -7,6 +7,7 @@ import { PrismaQuizAnswerRepository } from "@infrastructure/persistence/prisma/r
 import { CreateLessonUseCase } from "@application/lesson/use-cases/CreateLessonUseCase.js";
 import { ListLessonsUseCase } from "@application/lesson/use-cases/ListLessonsUseCase.js";
 import { GetLessonBySlugUseCase } from "@application/lesson/use-cases/GetLessonBySlugUseCase.js";
+import { UpdateLessonUseCase } from "@application/lesson/use-cases/UpdateLessonUseCase.js";
 import { UpsertProgressUseCase } from "@application/progress/use-cases/UpsertProgressUseCase.js";
 import { GetProgressUseCase } from "@application/progress/use-cases/GetProgressUseCase.js";
 import { SaveCodeSnippetUseCase } from "@application/code-snippet/use-cases/SaveCodeSnippetUseCase.js";
@@ -34,6 +35,7 @@ export function buildContainer() {
   const createLessonUseCase = new CreateLessonUseCase(lessonRepository);
   const listLessonsUseCase = new ListLessonsUseCase(lessonRepository);
   const getLessonBySlugUseCase = new GetLessonBySlugUseCase(lessonRepository);
+  const updateLessonUseCase = new UpdateLessonUseCase(lessonRepository);
 
   const upsertProgressUseCase = new UpsertProgressUseCase(progressRepository, lessonRepository);
   const getProgressUseCase = new GetProgressUseCase(progressRepository);
@@ -45,7 +47,12 @@ export function buildContainer() {
   const listQuizAnswersUseCase = new ListQuizAnswersUseCase(quizAnswerRepository);
 
   return {
-    lessonController: new LessonController(createLessonUseCase, listLessonsUseCase, getLessonBySlugUseCase),
+    lessonController: new LessonController(
+      createLessonUseCase,
+      listLessonsUseCase,
+      getLessonBySlugUseCase,
+      updateLessonUseCase
+    ),
     progressController: new ProgressController(upsertProgressUseCase, getProgressUseCase),
     codeSnippetController: new CodeSnippetController(saveCodeSnippetUseCase, getCodeSnippetUseCase),
     quizAnswerController: new QuizAnswerController(submitQuizAnswerUseCase, listQuizAnswersUseCase),

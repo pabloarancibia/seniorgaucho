@@ -11,6 +11,16 @@ export const createLessonBodySchema = z.object({
   order: z.number().int().nonnegative().default(0),
 });
 
+export const updateLessonBodySchema = z
+  .object({
+    title: z.string().min(1),
+    mdxContent: z.string().min(1),
+    language: z.enum(["es", "en"]),
+    order: z.number().int().nonnegative(),
+  })
+  .partial()
+  .refine((body) => Object.keys(body).length > 0, "Debe incluir al menos un campo a actualizar");
+
 export const lessonSlugParamsSchema = z.object({
   slug: z.string().min(1),
 });

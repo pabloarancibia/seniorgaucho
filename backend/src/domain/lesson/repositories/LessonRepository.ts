@@ -5,9 +5,12 @@ import type { Lesson, NewLessonProps } from "@domain/lesson/entities/Lesson.js";
  * La implementación concreta (Prisma, in-memory para tests, etc.) vive en
  * infrastructure/ y se inyecta donde se necesite.
  */
+export type UpdateLessonProps = Partial<NewLessonProps>;
+
 export interface LessonRepository {
   findAll(): Promise<Lesson[]>;
   findBySlug(slug: string): Promise<Lesson | null>;
   findById(id: string): Promise<Lesson | null>;
   create(props: NewLessonProps): Promise<Lesson>;
+  update(id: string, props: UpdateLessonProps): Promise<Lesson>;
 }

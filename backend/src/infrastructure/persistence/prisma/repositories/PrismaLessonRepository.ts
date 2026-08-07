@@ -1,5 +1,5 @@
 import { Lesson, type NewLessonProps } from "@domain/lesson/entities/Lesson.js";
-import type { LessonRepository } from "@domain/lesson/repositories/LessonRepository.js";
+import type { LessonRepository, UpdateLessonProps } from "@domain/lesson/repositories/LessonRepository.js";
 import type { PrismaClient, Lesson as PrismaLesson } from "@infrastructure/persistence/prisma/generated/client.js";
 
 export class PrismaLessonRepository implements LessonRepository {
@@ -22,6 +22,11 @@ export class PrismaLessonRepository implements LessonRepository {
 
   async create(props: NewLessonProps): Promise<Lesson> {
     const record = await this.prisma.lesson.create({ data: props });
+    return PrismaLessonRepository.toDomain(record);
+  }
+
+  async update(id: string, props: UpdateLessonProps): Promise<Lesson> {
+    const record = await this.prisma.lesson.update({ where: { id }, data: props });
     return PrismaLessonRepository.toDomain(record);
   }
 
