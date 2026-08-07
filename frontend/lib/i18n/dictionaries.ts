@@ -1,0 +1,43 @@
+export const locales = ["es", "en"] as const;
+export type Locale = (typeof locales)[number];
+
+export const dictionaries: Record<Locale, Record<string, string>> = {
+  es: {
+    "nav.lessons": "Lecciones",
+    "lessons.title": "Lecciones",
+    "lessons.empty": "Todavía no hay lecciones cargadas.",
+    "lesson.status.pending": "Pendiente",
+    "lesson.status.in_progress": "En progreso",
+    "lesson.status.completed": "Completada",
+    "editor.run": "Ejecutar",
+    "editor.running": "Ejecutando…",
+    "editor.save": "Guardar snippet",
+    "editor.saving": "Guardando…",
+    "editor.saved": "Guardado",
+    "editor.markCompleted": "Marcar como completada",
+    "editor.completed": "Completada",
+    "editor.output": "Salida",
+    "editor.output.empty": "Corré tu código para ver la salida acá.",
+    "theme.toggle": "Cambiar tema",
+    "locale.toggle": "Cambiar idioma",
+  },
+  en: {
+    "nav.lessons": "Lessons",
+    "lessons.title": "Lessons",
+    "lessons.empty": "No lessons loaded yet.",
+    "lesson.status.pending": "Pending",
+    "lesson.status.in_progress": "In progress",
+    "lesson.status.completed": "Completed",
+    "editor.run": "Run",
+    "editor.running": "Running…",
+    "editor.save": "Save snippet",
+    "editor.saving": "Saving…",
+    "editor.saved": "Saved",
+    "editor.markCompleted": "Mark as completed",
+    "editor.completed": "Completed",
+    "editor.output": "Output",
+    "editor.output.empty": "Run your code to see the output here.",
+    "theme.toggle": "Toggle theme",
+    "locale.toggle": "Toggle language",
+  },
+};
