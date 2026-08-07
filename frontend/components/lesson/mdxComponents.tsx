@@ -2,6 +2,7 @@ import type { MDXComponents } from "mdx/types";
 import type { ReactNode } from "react";
 import { QuizCard } from "@/components/lesson/QuizCard";
 import { QuizOption } from "@/components/lesson/QuizOption";
+import { Exercise } from "@/components/lesson/Exercise";
 
 interface QuizCardMdxProps {
   questionId: string;
@@ -20,6 +21,7 @@ export function createMdxComponents(lessonId: string): MDXComponents {
   return {
     QuizCard: (props: QuizCardMdxProps) => <QuizCard {...props} lessonId={lessonId} />,
     QuizOption,
+    Exercise,
     h1: (props) => <h1 className="mb-4 mt-8 text-2xl font-bold" {...props} />,
     h2: (props) => <h2 className="mb-3 mt-8 text-xl font-semibold" {...props} />,
     h3: (props) => <h3 className="mb-2 mt-6 text-lg font-semibold" {...props} />,
