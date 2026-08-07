@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Database
+# Prisma ORM 7 resuelve DATABASE_URL relativo a prisma.config.ts (raíz de backend/),
+# no relativo a prisma/schema.prisma como en versiones anteriores.
+backend/*.db
+backend/*.db-journal
+
+# Generated Prisma client
+backend/src/infrastructure/persistence/prisma/generated/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Claude Code local settings (per-developer, not shared)
+.claude/settings.local.json
+.claude/*.tmp.*
+
+# Testing / coverage
+coverage/
+
+# TypeScript build info
+*.tsbuildinfo

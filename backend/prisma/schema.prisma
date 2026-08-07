@@ -1,0 +1,106 @@
+// Prisma Schema — SeniorGaucho Study Platform
+// SQLite en desarrollo; el modelo de dominio está diseñado para migrar
+// a PostgreSQL en producción sin cambios estructurales (ver notas de escalado
+// al final del archivo).
+//
+// Prisma ORM 7: la conexión (datasource url) ya no vive en este archivo,
+// se define en `prisma.config.ts` junto con el driver adapter.
+// Ver: https://pris.ly/d/prisma7-client-config
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/infrastructure/persistence/prisma/generated"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ---------------------------------------------------------------------------
+// Lesson: unidad de contenido (teoría MDX + metadatos)
+// ---------------------------------------------------------------------------
+model Lesson {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  title      String
+  mdxContent String   @map("mdx_content")
+  language   String   @default("es") @map("language") // idioma base del contenido (es/en)
+  order      Int      @default(0)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  progress     Progress[]
+  codeSnippets CodeSnippet[]
+  quizAnswers  QuizAnswer[]
+
+  @@map("lessons")
+}
+
+// ---------------------------------------------------------------------------
+// Progress: estado de avance del usuario sobre una lección
+// ---------------------------------------------------------------------------
+enum ProgressStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Progress {
+  id           String         @id @default(cuid())
+  lessonId     String         @map("lesson_id")
+  status       ProgressStatus @default(PENDING)
+  lastAccessed DateTime       @default(now()) @map("last_accessed")
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  // Una lección tiene un único registro de progreso (single-user, Fase 1).
+  @@unique([lessonId])
+  @@index([status])
+  @@map("progress")
+}
+
+// ---------------------------------------------------------------------------
+// CodeSnippet: estado del editor Monaco por lección/lenguaje
+// ---------------------------------------------------------------------------
+model CodeSnippet {
+  id          String   @id @default(cuid())
+  lessonId    String   @map("lesson_id")
+  language    String // "python" | "typescript"
+  codeContent String   @map("code_content")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  // Un snippet guardado por combinación lección + lenguaje.
+  @@unique([lessonId, language])
+  @@map("code_snippets")
+}
+
+// ---------------------------------------------------------------------------
+// QuizAnswer: respuestas a los <QuizCard /> embebidos en el MDX
+// ---------------------------------------------------------------------------
+model QuizAnswer {
+  id             String   @id @default(cuid())
+  lessonId       String   @map("lesson_id")
+  questionId     String   @map("question_id")
+  selectedOption String   @map("selected_option")
+  isCorrect      Boolean  @map("is_correct")
+  answeredAt     DateTime @default(now()) @map("answered_at")
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  // Última respuesta gana por pregunta dentro de una lección.
+  @@unique([lessonId, questionId])
+  @@map("quiz_answers")
+}
+
+// ---------------------------------------------------------------------------
+// Notas de escalado (para cuando esto se convierta en multi-usuario/SaaS):
+// - Agregar modelo User y userId (FK) en Progress, CodeSnippet y QuizAnswer,
+//   reemplazando los @@unique actuales por @@unique([userId, lessonId, ...]).
+// - Cambiar datasource a postgresql y correr `prisma migrate dev` de nuevo;
+//   los enums pasan de emulados (SQLite) a nativos (Postgres) sin tocar el
+//   schema de dominio.
+// - mdxContent podría externalizarse a un CMS/objeto storage si el contenido
+//   crece mucho; Lesson quedaría con una referencia (path/URL) en su lugar.
+// ---------------------------------------------------------------------------

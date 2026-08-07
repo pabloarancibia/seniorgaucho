@@ -1,0 +1,26 @@
+{
+  "name": "seniorgaucho",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Plataforma de estudio interactiva para preparación de entrevistas técnicas (Python & TypeScript)",
+  "author": "Pablo Arancibia",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@11.20.0",
+  "scripts": {
+    "dev": "pnpm --parallel -r dev",
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "prisma:generate": "pnpm --filter backend prisma:generate",
+    "prisma:migrate": "pnpm --filter backend prisma:migrate",
+    "prisma:studio": "pnpm --filter backend prisma:studio",
+    "prisma:seed": "pnpm --filter backend prisma:seed"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "name": "backend",
+  "private": true,
+  "version": "0.1.0",
+  "description": "API — Arquitectura Hexagonal / DDD sobre Express + Prisma + SQLite",
+  "type": "module",
+  "main": "dist/infrastructure/http/server.js",
+  "scripts": {
+    "dev": "tsx watch src/infrastructure/http/server.ts",
+    "prebuild": "prisma generate",
+    "build": "tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
+    "start": "node dist/infrastructure/http/server.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "echo \"(tests se agregan en una fase posterior)\" && exit 0",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "tsx prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/adapter-better-sqlite3": "^7.9.1",
+    "@prisma/client": "^7.9.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "helmet": "^8.3.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.1.2",
+    "eslint": "^10.8.0",
+    "prisma": "^7.9.1",
+    "tsc-alias": "^1.9.1",
+    "tsx": "^4.23.10",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.66.0"
+  }
+}
