@@ -7,6 +7,7 @@ import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { usePyodide } from "@/lib/execution/usePyodide";
 import { useWebContainer } from "@/lib/execution/useWebContainer";
 import { TerminalOutput } from "@/components/editor/TerminalOutput";
+import { clearDraft, readDraft, writeDraft } from "@/lib/editor/draftStorage";
 import { api } from "@/lib/api/client";
 import type { CodeLanguage, ProgressStatus } from "@/lib/api/types";
 import type { ExecutionResult } from "@/lib/execution/types";
@@ -48,6 +49,18 @@ export function CodeEditorPanel({ lessonId }: CodeEditorPanelProps) {
 
   useEffect(() => {
     if (loadedLanguages.has(activeLanguage)) return;
+
+    // El borrador local (si existe) es más reciente que cualquier snippet
+    // guardado en el backend, porque se escribe en cada edición sin
+    // necesidad de click en "Guardar". Gana por sobre el backend.
+    const draft = readDraft(lessonId, activeLanguage);
+    if (draft !== null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync inicial desde localStorage, no un external store subscribible
+      setCodeByLanguage((prev) => ({ ...prev, [activeLanguage]: draft }));
+      setLoadedLanguages((prev) => new Set(prev).add(activeLanguage));
+      return;
+    }
+
     api
       .getCodeSnippet(lessonId, activeLanguage)
       .then((snippet) => {
@@ -60,6 +73,15 @@ export function CodeEditorPanel({ lessonId }: CodeEditorPanelProps) {
         setLoadedLanguages((prev) => new Set(prev).add(activeLanguage));
       });
   }, [lessonId, activeLanguage, loadedLanguages]);
+
+  const activeCode = codeByLanguage[activeLanguage];
+
+  useEffect(() => {
+    // No pisar el draft mientras todavía se está cargando el valor inicial.
+    if (!loadedLanguages.has(activeLanguage)) return;
+    const timeout = setTimeout(() => writeDraft(lessonId, activeLanguage, activeCode), 500);
+    return () => clearTimeout(timeout);
+  }, [lessonId, activeLanguage, activeCode, loadedLanguages]);
 
   const runner = activeLanguage === "python" ? pyodide : webcontainer;
 
@@ -78,12 +100,16 @@ export function CodeEditorPanel({ lessonId }: CodeEditorPanelProps) {
     setSaving(true);
     try {
       await api.saveCodeSnippet(lessonId, activeLanguage, codeByLanguage[activeLanguage]);
+      // Ya quedó persistido en el backend, el borrador local deja de ser necesario.
+      clearDraft(lessonId, activeLanguage);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } finally {
       setSaving(false);
     }
   }, [lessonId, activeLanguage, codeByLanguage]);
+
+  const handleResetOutput = useCallback(() => setResult(null), []);
 
   const handleMarkCompleted = useCallback(async () => {
     const progress = await api.upsertProgress(lessonId, "COMPLETED");
@@ -123,7 +149,7 @@ export function CodeEditorPanel({ lessonId }: CodeEditorPanelProps) {
       </div>
 
       <div className="h-40 shrink-0">
-        <TerminalOutput result={result} />
+        <TerminalOutput result={result} onReset={handleResetOutput} />
       </div>
 
       <div className="flex items-center gap-2 border-t border-border p-3">
