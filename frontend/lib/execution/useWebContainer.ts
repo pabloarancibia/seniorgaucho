@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { WebContainer, type WebContainerProcess } from "@webcontainer/api";
 import type { ExecutionResult, ExecutionStatus } from "@/lib/execution/types";
+import { stripAnsi } from "@/lib/execution/stripAnsi";
 
 let containerBootPromise: Promise<WebContainer> | null = null;
 
@@ -75,7 +76,12 @@ export function useWebContainer() {
       await container.fs.writeFile("index.ts", code);
 
       setStatus("running");
-      const process = await container.spawn("npx", ["tsx", "index.ts"]);
+      // FORCE_COLOR/NO_COLOR: tsx corre bajo una pty simulada acá adentro,
+      // así que Node por default colorea la salida (útil en una terminal
+      // real, ilegible en un <pre> de HTML que no interpreta ANSI).
+      const process = await container.spawn("npx", ["tsx", "index.ts"], {
+        env: { FORCE_COLOR: "0", NO_COLOR: "1" },
+      });
       activeProcessRef.current = process;
 
       let output = "";
@@ -99,7 +105,9 @@ export function useWebContainer() {
       }
 
       setStatus("ready");
-      return { output, success: exitCode === 0 };
+      // Red de seguridad además de FORCE_COLOR/NO_COLOR: si algo igual
+      // coloreó la salida, no queremos que se vea como texto crudo.
+      return { output: stripAnsi(output), success: exitCode === 0 };
     },
     [ensureReady]
   );
