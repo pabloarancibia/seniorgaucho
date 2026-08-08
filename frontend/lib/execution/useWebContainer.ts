@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { WebContainer } from "@webcontainer/api";
+import { WebContainer, type WebContainerProcess } from "@webcontainer/api";
 import type { ExecutionResult, ExecutionStatus } from "@/lib/execution/types";
 
 let containerBootPromise: Promise<WebContainer> | null = null;
@@ -22,6 +22,8 @@ function bootWebContainer(): Promise<WebContainer> {
 export function useWebContainer() {
   const containerRef = useRef<WebContainer | null>(null);
   const readyRef = useRef<Promise<WebContainer> | null>(null);
+  const activeProcessRef = useRef<WebContainerProcess | null>(null);
+  const runIdRef = useRef(0);
   const [status, setStatus] = useState<ExecutionStatus>("idle");
 
   const ensureReady = useCallback(async (): Promise<WebContainer> => {
@@ -63,10 +65,19 @@ export function useWebContainer() {
   const run = useCallback(
     async (code: string): Promise<ExecutionResult> => {
       const container = await ensureReady();
+
+      // Si quedaba un proceso de una corrida anterior todavía vivo, lo
+      // matamos antes de arrancar: dos procesos escribiendo al mismo tiempo
+      // es lo que mezcla output de corridas distintas en la terminal.
+      activeProcessRef.current?.kill();
+
+      const runId = ++runIdRef.current;
       await container.fs.writeFile("index.ts", code);
 
       setStatus("running");
       const process = await container.spawn("npx", ["tsx", "index.ts"]);
+      activeProcessRef.current = process;
+
       let output = "";
       await process.output.pipeTo(
         new WritableStream({
@@ -77,6 +88,16 @@ export function useWebContainer() {
       );
 
       const exitCode = await process.exit;
+      if (activeProcessRef.current === process) {
+        activeProcessRef.current = null;
+      }
+
+      // Si mientras esperábamos esta corrida se lanzó una más nueva, este
+      // resultado ya es viejo: no lo devolvemos para no pisar el actual.
+      if (runId !== runIdRef.current) {
+        return { output: "", success: true };
+      }
+
       setStatus("ready");
       return { output, success: exitCode === 0 };
     },
