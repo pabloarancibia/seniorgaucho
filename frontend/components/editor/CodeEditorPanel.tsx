@@ -83,6 +83,31 @@ export function CodeEditorPanel({ lessonId }: CodeEditorPanelProps) {
     return () => clearTimeout(timeout);
   }, [lessonId, activeLanguage, activeCode, loadedLanguages]);
 
+  const persistToBackend = useCallback(
+    async (language: CodeLanguage, code: string) => {
+      await api.saveCodeSnippet(lessonId, language, code);
+      // Ya quedó persistido en el backend, el borrador local deja de ser necesario.
+      clearDraft(lessonId, language);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    },
+    [lessonId]
+  );
+
+  useEffect(() => {
+    // Guardado automático y permanente contra el backend (no solo el
+    // borrador local): si volvés a esta lección en otro navegador o
+    // dispositivo, tu código sigue ahí sin que hayas tocado "Guardar".
+    if (!loadedLanguages.has(activeLanguage)) return;
+    const timeout = setTimeout(() => {
+      persistToBackend(activeLanguage, activeCode).catch(() => {
+        // Sin conexión o error del backend: el borrador local en
+        // localStorage sigue como red de seguridad, no se pierde nada.
+      });
+    }, 1500);
+    return () => clearTimeout(timeout);
+  }, [activeLanguage, activeCode, loadedLanguages, persistToBackend]);
+
   const runner = activeLanguage === "python" ? pyodide : webcontainer;
 
   const handleRun = useCallback(async () => {
@@ -99,15 +124,11 @@ export function CodeEditorPanel({ lessonId }: CodeEditorPanelProps) {
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
-      await api.saveCodeSnippet(lessonId, activeLanguage, codeByLanguage[activeLanguage]);
-      // Ya quedó persistido en el backend, el borrador local deja de ser necesario.
-      clearDraft(lessonId, activeLanguage);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      await persistToBackend(activeLanguage, codeByLanguage[activeLanguage]);
     } finally {
       setSaving(false);
     }
-  }, [lessonId, activeLanguage, codeByLanguage]);
+  }, [activeLanguage, codeByLanguage, persistToBackend]);
 
   const handleResetOutput = useCallback(() => setResult(null), []);
 
