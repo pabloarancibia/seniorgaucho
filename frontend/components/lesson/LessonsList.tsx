@@ -15,6 +15,17 @@ export function LessonsList({ lessons, progressByLessonId }: LessonsListProps) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
       <h1 className="mb-6 text-2xl font-bold">{t("lessons.title")}</h1>
+
+      <Link
+        href="/temario"
+        className="mb-6 flex items-center justify-between rounded-lg border border-accent/50 bg-bg-subtle p-4 transition-colors hover:border-accent"
+      >
+        <span>
+          <span className="block font-medium">📋 {t("syllabus.link.title")}</span>
+          <span className="block text-xs text-fg-muted">{t("syllabus.link.subtitle")}</span>
+        </span>
+      </Link>
+
       {lessons.length === 0 ? (
         <p className="text-fg-muted">{t("lessons.empty")}</p>
       ) : (
