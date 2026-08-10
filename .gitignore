@@ -22,6 +22,9 @@ backend/*.db-journal
 # Generated Prisma client
 backend/src/infrastructure/persistence/prisma/generated/
 
+# Contenido de zuriboats sincronizado (artefacto derivado, ver scripts/sync-zuriboats.sh)
+frontend/public/zuriboats-docs/
+
 # Logs
 *.log
 npm-debug.log*

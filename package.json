@@ -21,6 +21,7 @@
     "prisma:generate": "pnpm --filter backend prisma:generate",
     "prisma:migrate": "pnpm --filter backend prisma:migrate",
     "prisma:studio": "pnpm --filter backend prisma:studio",
-    "prisma:seed": "pnpm --filter backend prisma:seed"
+    "prisma:seed": "pnpm --filter backend prisma:seed",
+    "sync:zuriboats": "bash scripts/sync-zuriboats.sh"
   }
 }
