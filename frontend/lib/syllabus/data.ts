@@ -36,4 +36,39 @@ export const syllabus: SyllabusModule[] = [
       { code: "0.5", title: "Reto de Live Coding — Refactorización Extrema", slug: null },
     ],
   },
+  {
+    title: "Módulo 1: El Motor y la Memoria (Execution & Memory)",
+    topics: [
+      { code: "1.1", title: "El Motor y la Memoria: Concurrencia, GIL y Event Loop", slug: null },
+      { code: "1.2", title: "Reto de Live Coding — Streams y Backpressure", slug: null },
+    ],
+  },
+  {
+    title: "Módulo 2: Integridad y Concurrencia (Data & State)",
+    topics: [
+      { code: "2.1", title: "Integridad y Concurrencia: Locking y Aislamiento Transaccional", slug: null },
+      { code: "2.2", title: "Reto de Live Coding — El Problema del Doble Gasto", slug: null },
+    ],
+  },
+  {
+    title: "Módulo 3: Fronteras, Tipos e Invariantes (Domain Architecture)",
+    topics: [
+      { code: "3.1", title: "Fronteras, Tipos e Invariantes: Arquitectura Hexagonal", slug: null },
+      { code: "3.2", title: "Reto de Live Coding — Refactorización de Arquitectura", slug: null },
+    ],
+  },
+  {
+    title: "Módulo 4: Sistemas Distribuidos y Resiliencia (Distributed Systems)",
+    topics: [
+      { code: "4.1", title: "Sistemas Distribuidos: Colas, Caché y Consistencia Eventual", slug: null },
+      { code: "4.2", title: "Reto de Live Coding — Procesador Idempotente", slug: null },
+    ],
+  },
+  {
+    title: "Módulo 5: Operaciones y Observabilidad (Production-Ready)",
+    topics: [
+      { code: "5.1", title: "Operaciones y Observabilidad: Trazabilidad y Graceful Shutdown", slug: null },
+      { code: "5.2", title: "Reto de Live Coding — Rate Limiter", slug: null },
+    ],
+  },
 ];
