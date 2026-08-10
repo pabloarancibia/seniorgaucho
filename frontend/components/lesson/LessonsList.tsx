@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { ProgressDashboard } from "@/components/lesson/ProgressDashboard";
 import type { Lesson, ProgressStatus } from "@/lib/api/types";
 
 interface LessonsListProps {
@@ -15,6 +16,8 @@ export function LessonsList({ lessons, progressByLessonId }: LessonsListProps) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
       <h1 className="mb-6 text-2xl font-bold">{t("lessons.title")}</h1>
+
+      <ProgressDashboard lessons={lessons} progressByLessonId={progressByLessonId} />
 
       <Link
         href="/temario"
