@@ -10,7 +10,7 @@ interface LessonsListProps {
 }
 
 export function LessonsList({ lessons, progressByLessonId }: LessonsListProps) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
@@ -38,7 +38,9 @@ export function LessonsList({ lessons, progressByLessonId }: LessonsListProps) {
                   href={`/lessons/${lesson.slug}`}
                   className="flex items-center justify-between rounded-lg border border-border p-4 transition-colors hover:border-accent"
                 >
-                  <span className="font-medium">{lesson.title}</span>
+                  <span className="font-medium">
+                    {locale === "en" ? (lesson.titleEn ?? lesson.title) : lesson.title}
+                  </span>
                   <span className="text-xs text-fg-muted">{t(`lesson.status.${status.toLowerCase()}`)}</span>
                 </Link>
               </li>

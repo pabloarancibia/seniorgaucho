@@ -3,7 +3,9 @@ export interface Lesson {
   slug: string;
   title: string;
   mdxContent: string;
-  language: "es" | "en";
+  /** Traducción al inglés, null hasta que se cargue. */
+  titleEn: string | null;
+  mdxContentEn: string | null;
   order: number;
   createdAt: string;
   updatedAt: string;

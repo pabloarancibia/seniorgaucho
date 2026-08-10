@@ -7,7 +7,8 @@ export const createLessonBodySchema = z.object({
     .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "El slug debe ser kebab-case (ej: two-sum-problem)"),
   title: z.string().min(1),
   mdxContent: z.string().min(1),
-  language: z.enum(["es", "en"]).default("es"),
+  titleEn: z.string().min(1).nullable().optional(),
+  mdxContentEn: z.string().min(1).nullable().optional(),
   order: z.number().int().nonnegative().default(0),
 });
 
@@ -15,7 +16,8 @@ export const updateLessonBodySchema = z
   .object({
     title: z.string().min(1),
     mdxContent: z.string().min(1),
-    language: z.enum(["es", "en"]),
+    titleEn: z.string().min(1).nullable(),
+    mdxContentEn: z.string().min(1).nullable(),
     order: z.number().int().nonnegative(),
   })
   .partial()

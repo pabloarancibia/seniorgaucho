@@ -3,13 +3,18 @@ export interface LessonProps {
   slug: string;
   title: string;
   mdxContent: string;
-  language: string;
+  /** Traducción al inglés, opcional: null hasta que se cargue. */
+  titleEn: string | null;
+  mdxContentEn: string | null;
   order: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export type NewLessonProps = Omit<LessonProps, "id" | "createdAt" | "updatedAt">;
+export type NewLessonProps = Omit<LessonProps, "id" | "createdAt" | "updatedAt" | "titleEn" | "mdxContentEn"> & {
+  titleEn?: string | null;
+  mdxContentEn?: string | null;
+};
 
 /**
  * Entidad de dominio. No conoce Prisma, Express ni Zod — solo las reglas
@@ -48,8 +53,12 @@ export class Lesson {
     return this.props.mdxContent;
   }
 
-  get language(): string {
-    return this.props.language;
+  get titleEn(): string | null {
+    return this.props.titleEn;
+  }
+
+  get mdxContentEn(): string | null {
+    return this.props.mdxContentEn;
   }
 
   get order(): number {

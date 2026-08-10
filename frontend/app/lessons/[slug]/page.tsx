@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { ApiError, api } from "@/lib/api/client";
 import { MdxContent } from "@/components/lesson/MdxContent";
+import { LessonTheory } from "@/components/lesson/LessonTheory";
 import { CodeEditorPanel } from "@/components/editor/CodeEditorPanel";
 import { ResizableSplitPane } from "@/components/layout/ResizableSplitPane";
 
@@ -19,10 +20,14 @@ export default async function LessonPage({ params }: LessonPageProps) {
   return (
     <ResizableSplitPane
       left={
-        <>
-          <h1 className="mb-6 text-2xl font-bold">{lesson.title}</h1>
-          <MdxContent source={lesson.mdxContent} lessonId={lesson.id} />
-        </>
+        <LessonTheory
+          titleEs={lesson.title}
+          titleEn={lesson.titleEn}
+          contentEs={<MdxContent source={lesson.mdxContent} lessonId={lesson.id} />}
+          contentEn={
+            lesson.mdxContentEn ? <MdxContent source={lesson.mdxContentEn} lessonId={lesson.id} /> : null
+          }
+        />
       }
       right={<CodeEditorPanel lessonId={lesson.id} />}
     />

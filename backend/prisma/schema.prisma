@@ -20,14 +20,17 @@ datasource db {
 // Lesson: unidad de contenido (teoría MDX + metadatos)
 // ---------------------------------------------------------------------------
 model Lesson {
-  id         String   @id @default(cuid())
-  slug       String   @unique
-  title      String
-  mdxContent String   @map("mdx_content")
-  language   String   @default("es") @map("language") // idioma base del contenido (es/en)
-  order      Int      @default(0)
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  title        String
+  mdxContent   String   @map("mdx_content")
+  // Traducción al inglés, opcional: mientras no se cargue, el frontend
+  // muestra la versión en español aunque el toggle esté en "en".
+  titleEn      String?  @map("title_en")
+  mdxContentEn String?  @map("mdx_content_en")
+  order        Int      @default(0)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   progress     Progress[]
   codeSnippets CodeSnippet[]
