@@ -34,7 +34,7 @@ export const syllabus: SyllabusModule[] = [
       {
         code: "0.3",
         title: "Value Objects, Tipado Estructural y Patrones Creacionales/Estructurales",
-        slug: null,
+        slug: "m0-0-3-value-objects-tipado-estructural-patrones",
       },
       { code: "0.4", title: "Gimnasia de Tipos (Type Gymnastics)", slug: null },
       { code: "0.5", title: "Reto de Live Coding — Refactorización Extrema", slug: null },
