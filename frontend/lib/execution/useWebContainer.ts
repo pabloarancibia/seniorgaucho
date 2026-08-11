@@ -19,6 +19,9 @@ function bootWebContainer(): Promise<WebContainer> {
  *
  * `tsx` se instala una sola vez al bootear; cada Run solo reescribe
  * index.ts y vuelve a correrlo, para no pagar `npm install` en cada click.
+ * `dinero.js` también viene preinstalado (Fase 0.3 en adelante enseña a usarlo
+ * para dinero en vez de `number`/`float`) — si se agregan más lecciones que
+ * necesiten otra librería, se suma acá.
  */
 export function useWebContainer() {
   const containerRef = useRef<WebContainer | null>(null);
@@ -39,7 +42,12 @@ export function useWebContainer() {
         "package.json": {
           file: {
             contents: JSON.stringify(
-              { name: "sandbox", private: true, type: "module", dependencies: { tsx: "^4.20.0" } },
+              {
+                name: "sandbox",
+                private: true,
+                type: "module",
+                dependencies: { tsx: "^4.20.0", "dinero.js": "^2.0.2" },
+              },
               null,
               2
             ),
