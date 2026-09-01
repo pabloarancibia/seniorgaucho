@@ -21,11 +21,23 @@ const STARTER_CODE: Record<CodeLanguage, string> = {
 
 const LANGUAGES: CodeLanguage[] = ["python", "typescript"];
 
-interface CodeEditorPanelProps {
+interface PracticeCodeEditorPanelProps {
   lessonId: string;
+  topicSlug: string;
+  /** Notifica el código/lenguaje activos en cada cambio — el chat de práctica los usa como contexto. */
+  onCodeChange?: (code: string, language: CodeLanguage) => void;
 }
 
-export function CodeEditorPanel({ lessonId }: CodeEditorPanelProps) {
+/**
+ * Evolución de lo que era CodeEditorPanel: ahora vive en la pantalla de
+ * práctica de un tema puntual, no en la lección entera — el buffer de
+ * código, el borrador local y el snippet persistido se scopean por
+ * (lessonId, topicSlug) en vez de solo lessonId. "Marcar como completada"
+ * sigue siendo a nivel lección (Progress no tiene noción de tema). El
+ * enunciado del ejercicio ya no vive acá — es su propia columna,
+ * PracticeStatementPanel — así que el editor ocupa toda la altura de la suya.
+ */
+export function PracticeCodeEditorPanel({ lessonId, topicSlug, onCodeChange }: PracticeCodeEditorPanelProps) {
   const { t } = useLocale();
   const { theme } = useTheme();
   const pyodide = usePyodide();
@@ -53,7 +65,7 @@ export function CodeEditorPanel({ lessonId }: CodeEditorPanelProps) {
     // El borrador local (si existe) es más reciente que cualquier snippet
     // guardado en el backend, porque se escribe en cada edición sin
     // necesidad de click en "Guardar". Gana por sobre el backend.
-    const draft = readDraft(lessonId, activeLanguage);
+    const draft = readDraft(lessonId, topicSlug, activeLanguage);
     if (draft !== null) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- sync inicial desde localStorage, no un external store subscribible
       setCodeByLanguage((prev) => ({ ...prev, [activeLanguage]: draft }));
@@ -62,7 +74,7 @@ export function CodeEditorPanel({ lessonId }: CodeEditorPanelProps) {
     }
 
     api
-      .getCodeSnippet(lessonId, activeLanguage)
+      .getPracticeCodeSnippet(lessonId, topicSlug, activeLanguage)
       .then((snippet) => {
         if (snippet) {
           setCodeByLanguage((prev) => ({ ...prev, [activeLanguage]: snippet.codeContent }));
@@ -72,31 +84,35 @@ export function CodeEditorPanel({ lessonId }: CodeEditorPanelProps) {
       .finally(() => {
         setLoadedLanguages((prev) => new Set(prev).add(activeLanguage));
       });
-  }, [lessonId, activeLanguage, loadedLanguages]);
+  }, [lessonId, topicSlug, activeLanguage, loadedLanguages]);
 
   const activeCode = codeByLanguage[activeLanguage];
 
   useEffect(() => {
+    onCodeChange?.(activeCode, activeLanguage);
+  }, [activeCode, activeLanguage, onCodeChange]);
+
+  useEffect(() => {
     // No pisar el draft mientras todavía se está cargando el valor inicial.
     if (!loadedLanguages.has(activeLanguage)) return;
-    const timeout = setTimeout(() => writeDraft(lessonId, activeLanguage, activeCode), 500);
+    const timeout = setTimeout(() => writeDraft(lessonId, topicSlug, activeLanguage, activeCode), 500);
     return () => clearTimeout(timeout);
-  }, [lessonId, activeLanguage, activeCode, loadedLanguages]);
+  }, [lessonId, topicSlug, activeLanguage, activeCode, loadedLanguages]);
 
   const persistToBackend = useCallback(
     async (language: CodeLanguage, code: string) => {
-      await api.saveCodeSnippet(lessonId, language, code);
+      await api.savePracticeCodeSnippet(lessonId, topicSlug, language, code);
       // Ya quedó persistido en el backend, el borrador local deja de ser necesario.
-      clearDraft(lessonId, language);
+      clearDraft(lessonId, topicSlug, language);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     },
-    [lessonId]
+    [lessonId, topicSlug]
   );
 
   useEffect(() => {
     // Guardado automático y permanente contra el backend (no solo el
-    // borrador local): si volvés a esta lección en otro navegador o
+    // borrador local): si volvés a este tema en otro navegador o
     // dispositivo, tu código sigue ahí sin que hayas tocado "Guardar".
     if (!loadedLanguages.has(activeLanguage)) return;
     const timeout = setTimeout(() => {
@@ -139,7 +155,7 @@ export function CodeEditorPanel({ lessonId }: CodeEditorPanelProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-border px-3 py-2">
+      <div className="flex items-center justify-between border-b border-border bg-bg-subtle px-3 py-2.5">
         <div className="flex gap-1">
           {LANGUAGES.map((lang) => (
             <button
@@ -147,15 +163,17 @@ export function CodeEditorPanel({ lessonId }: CodeEditorPanelProps) {
               type="button"
               onClick={() => setActiveLanguage(lang)}
               className={[
-                "rounded-md px-3 py-1 text-sm font-medium capitalize transition-colors",
-                activeLanguage === lang ? "bg-accent text-accent-fg" : "text-fg-muted hover:text-fg",
+                "rounded-full px-3.5 py-1.5 text-sm font-medium capitalize transition-all",
+                activeLanguage === lang
+                  ? "bg-accent text-accent-fg shadow-sm"
+                  : "text-fg-muted hover:bg-border/40 hover:text-fg",
               ].join(" ")}
             >
               {lang}
             </button>
           ))}
         </div>
-        <span className="text-xs text-fg-muted">{t(`lesson.status.${progressStatus.toLowerCase()}`)}</span>
+        <span className="text-xs font-medium text-fg-muted">{t(`lesson.status.${progressStatus.toLowerCase()}`)}</span>
       </div>
 
       <div className="min-h-0 flex-1">
@@ -178,7 +196,7 @@ export function CodeEditorPanel({ lessonId }: CodeEditorPanelProps) {
           type="button"
           onClick={handleRun}
           disabled={running}
-          className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-accent-fg disabled:opacity-60"
+          className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-fg transition-transform hover:scale-105 disabled:opacity-60 disabled:hover:scale-100"
         >
           {running ? t("editor.running") : t("editor.run")}
         </button>
@@ -186,7 +204,7 @@ export function CodeEditorPanel({ lessonId }: CodeEditorPanelProps) {
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="rounded-md border border-border px-3 py-1.5 text-sm font-medium disabled:opacity-60"
+          className="rounded-full border border-border px-4 py-2 text-sm font-medium transition-colors hover:border-accent hover:text-accent disabled:opacity-60"
         >
           {saving ? t("editor.saving") : saved ? t("editor.saved") : t("editor.save")}
         </button>
@@ -194,7 +212,7 @@ export function CodeEditorPanel({ lessonId }: CodeEditorPanelProps) {
           type="button"
           onClick={handleMarkCompleted}
           disabled={progressStatus === "COMPLETED"}
-          className="ml-auto rounded-md border border-border px-3 py-1.5 text-sm font-medium disabled:opacity-60"
+          className="ml-auto rounded-full border border-accent-secondary/50 px-4 py-2 text-sm font-medium text-accent-secondary transition-colors hover:bg-accent-secondary/10 disabled:opacity-60"
         >
           {progressStatus === "COMPLETED" ? t("editor.completed") : t("editor.markCompleted")}
         </button>

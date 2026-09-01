@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
+import { Manrope } from "next/font/google";
 import { LocaleProvider } from "@/lib/i18n/LocaleProvider";
 import { ThemeProvider } from "@/lib/theme/ThemeProvider";
+import { ProviderPreferenceProvider } from "@/lib/llm/ProviderPreferenceProvider";
 import { Header } from "@/components/layout/Header";
 import { THEME_STORAGE_KEY } from "@/lib/theme/constants";
 import "./globals.css";
+
+// Sans-serif cálida y redondeada — el look "amigable" de la paleta Soft &
+// Pop empieza en la tipografía, no solo en el color. Self-hosted por
+// next/font (sin request a Google en runtime, sin layout shift).
+const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
 
 export const metadata: Metadata = {
   title: "SeniorGaucho — Study Platform",
@@ -22,11 +29,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className="min-h-screen bg-bg text-fg antialiased">
+      <body className={`${manrope.variable} min-h-screen bg-bg font-sans text-fg antialiased`}>
         <ThemeProvider>
           <LocaleProvider>
-            <Header />
-            <main className="min-h-[calc(100vh-3.5rem)]">{children}</main>
+            <ProviderPreferenceProvider>
+              <Header />
+              <main className="min-h-[calc(100vh-4rem)]">{children}</main>
+            </ProviderPreferenceProvider>
           </LocaleProvider>
         </ThemeProvider>
       </body>

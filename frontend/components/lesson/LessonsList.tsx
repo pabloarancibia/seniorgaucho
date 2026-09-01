@@ -14,37 +14,50 @@ export function LessonsList({ lessons, progressByLessonId }: LessonsListProps) {
   const { t, locale } = useLocale();
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="mb-6 text-2xl font-bold">{t("lessons.title")}</h1>
+    <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
+      <h1 className="mb-6 text-3xl font-extrabold tracking-tight">{t("lessons.title")}</h1>
 
       <ProgressDashboard lessons={lessons} progressByLessonId={progressByLessonId} />
 
       <Link
         href="/temario"
-        className="mb-6 flex items-center justify-between rounded-lg border border-accent/50 bg-bg-subtle p-4 transition-colors hover:border-accent"
+        className="mb-6 flex items-center justify-between rounded-2xl border border-accent/40 bg-accent/5 p-5 transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-md"
       >
         <span>
-          <span className="block font-medium">📋 {t("syllabus.link.title")}</span>
+          <span className="block font-semibold">📋 {t("syllabus.link.title")}</span>
           <span className="block text-xs text-fg-muted">{t("syllabus.link.subtitle")}</span>
         </span>
       </Link>
 
       {lessons.length === 0 ? (
-        <p className="text-fg-muted">{t("lessons.empty")}</p>
+        <p className="rounded-2xl border border-dashed border-border bg-bg-subtle p-6 text-center text-fg-muted">
+          {t("lessons.empty")}
+        </p>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-3">
           {lessons.map((lesson) => {
             const status = progressByLessonId[lesson.id] ?? "PENDING";
             return (
               <li key={lesson.id}>
                 <Link
                   href={`/lessons/${lesson.slug}`}
-                  className="flex items-center justify-between rounded-lg border border-border p-4 transition-colors hover:border-accent"
+                  className="flex items-center justify-between rounded-2xl border border-border p-4 transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-md"
                 >
                   <span className="font-medium">
                     {locale === "en" ? (lesson.titleEn ?? lesson.title) : lesson.title}
                   </span>
-                  <span className="text-xs text-fg-muted">{t(`lesson.status.${status.toLowerCase()}`)}</span>
+                  <span
+                    className={[
+                      "shrink-0 rounded-full px-2.5 py-1 text-xs font-medium",
+                      status === "COMPLETED" && "bg-accent-secondary/15 text-accent-secondary",
+                      status === "IN_PROGRESS" && "bg-accent-warm/15 text-accent-warm",
+                      status === "PENDING" && "bg-border/50 text-fg-muted",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  >
+                    {t(`lesson.status.${status.toLowerCase()}`)}
+                  </span>
                 </Link>
               </li>
             );

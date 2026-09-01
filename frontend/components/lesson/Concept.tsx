@@ -19,15 +19,20 @@ const LANGUAGE_LABEL: Record<NonNullable<ConceptProps["language"]>, string> = {
  */
 export function Concept({ title, language, children }: ConceptProps) {
   return (
-    <details className="not-prose group my-4 rounded-lg border border-border bg-bg-subtle">
-      <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 font-medium [&::-webkit-details-marker]:hidden">
-        <span className="text-fg-muted transition-transform group-open:rotate-90" aria-hidden>
+    <details className="not-prose group my-4 overflow-hidden rounded-xl border border-border bg-bg-subtle transition-shadow open:shadow-sm">
+      <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 font-medium transition-colors hover:bg-border/30 [&::-webkit-details-marker]:hidden">
+        <span
+          className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-border/60 text-xs text-fg-muted transition-transform group-open:rotate-90 group-open:bg-accent group-open:text-accent-fg"
+          aria-hidden
+        >
           ▸
         </span>
         <span>📖 {title}</span>
         {language && <span className="ml-auto shrink-0 text-xs text-fg-muted">{LANGUAGE_LABEL[language]}</span>}
       </summary>
-      <div className="space-y-2 border-t border-border px-4 py-3 text-sm leading-relaxed">{children}</div>
+      <div className="accordion-content space-y-2 border-t border-border px-4 py-3 text-sm leading-relaxed">
+        {children}
+      </div>
     </details>
   );
 }

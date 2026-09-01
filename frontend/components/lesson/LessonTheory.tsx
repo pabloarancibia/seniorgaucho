@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 interface LessonTheoryProps {
@@ -20,6 +20,19 @@ interface LessonTheoryProps {
 export function LessonTheory({ titleEs, titleEn, contentEs, contentEn }: LessonTheoryProps) {
   const { locale } = useLocale();
   const showEnglish = locale === "en" && contentEn !== null;
+
+  useEffect(() => {
+    // El botón "← Volver a la teoría" de la pantalla de práctica linkea a
+    // /lessons/[slug]#topicSlug — los anchors nativos no auto-expanden
+    // <details>, así que lo forzamos acá al montar.
+    const topicSlug = window.location.hash.slice(1);
+    if (!topicSlug) return;
+    const target = document.getElementById(topicSlug);
+    if (target instanceof HTMLDetailsElement) {
+      target.open = true;
+      target.scrollIntoView({ block: "start" });
+    }
+  }, [showEnglish]);
 
   return (
     <>

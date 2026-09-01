@@ -2,24 +2,38 @@
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+/*
+ * Paleta "Soft & Pop": fondos cálidos y suaves (crema / charcoal violáceo en
+ * dark) para no cansar la vista, contrastados con acentos vibrantes —
+ * púrpura como acento primario, turquesa como secundario (progreso/estados
+ * positivos), naranja como "warm" para toques gamificados/destacados.
+ */
 :root {
-  --color-bg: #ffffff;
-  --color-bg-subtle: #f4f4f5;
-  --color-border: #e4e4e7;
-  --color-fg: #18181b;
-  --color-fg-muted: #71717a;
-  --color-accent: #4f46e5;
+  --color-bg: #faf9f6;
+  --color-bg-subtle: #f0ece2;
+  --color-border: #e4ddcf;
+  --color-fg: #2b2620;
+  --color-fg-muted: #7d7566;
+  --color-accent: #7c3aed;
   --color-accent-fg: #ffffff;
+  --color-accent-secondary: #0d9488;
+  --color-accent-secondary-fg: #ffffff;
+  --color-accent-warm: #f97316;
+  --color-accent-warm-fg: #ffffff;
 }
 
 [data-theme="dark"] {
-  --color-bg: #0b0b0f;
-  --color-bg-subtle: #16161c;
-  --color-border: #27272f;
-  --color-fg: #f4f4f5;
-  --color-fg-muted: #a1a1aa;
-  --color-accent: #818cf8;
-  --color-accent-fg: #0b0b0f;
+  --color-bg: #18151f;
+  --color-bg-subtle: #211d2c;
+  --color-border: #332c42;
+  --color-fg: #f4f1ea;
+  --color-fg-muted: #a79fb3;
+  --color-accent: #a78bfa;
+  --color-accent-fg: #1e1b2e;
+  --color-accent-secondary: #2dd4bf;
+  --color-accent-secondary-fg: #0f2926;
+  --color-accent-warm: #fb923c;
+  --color-accent-warm-fg: #431407;
 }
 
 @theme inline {
@@ -30,9 +44,38 @@
   --color-fg-muted: var(--color-fg-muted);
   --color-accent: var(--color-accent);
   --color-accent-fg: var(--color-accent-fg);
+  --color-accent-secondary: var(--color-accent-secondary);
+  --color-accent-secondary-fg: var(--color-accent-secondary-fg);
+  --color-accent-warm: var(--color-accent-warm);
+  --color-accent-warm-fg: var(--color-accent-warm-fg);
+  --font-sans: var(--font-manrope);
 }
 
 body {
   background-color: var(--color-bg);
   color: var(--color-fg);
+}
+
+/* Fade-in sutil para el contenido de los acordeones (<Section>/<Concept>/
+   <Hint>) al abrirse — reusable vía la clase .accordion-content en el div
+   interno. */
+details[open] > .accordion-content {
+  animation: accordion-reveal 0.2s ease-out;
+}
+
+@keyframes accordion-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  details[open] > .accordion-content {
+    animation: none;
+  }
 }

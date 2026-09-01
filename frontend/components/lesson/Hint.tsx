@@ -13,14 +13,19 @@ export interface HintProps {
  */
 export function Hint({ children, number }: HintProps) {
   return (
-    <details className="group my-2 rounded-md border border-border bg-bg px-3 py-2">
-      <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-medium text-accent [&::-webkit-details-marker]:hidden">
-        <span className="text-fg-muted transition-transform group-open:rotate-90" aria-hidden>
+    <details className="group my-2 overflow-hidden rounded-lg border border-border bg-bg transition-shadow open:shadow-sm">
+      <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/5 [&::-webkit-details-marker]:hidden">
+        <span
+          className="flex h-4 w-4 shrink-0 items-center justify-center text-fg-muted transition-transform group-open:rotate-90 group-open:text-accent"
+          aria-hidden
+        >
           ▸
         </span>
         💡 Pista {number}
       </summary>
-      <div className="mt-2 space-y-2 border-t border-border pt-2 text-sm leading-relaxed">{children}</div>
+      <div className="accordion-content space-y-2 border-t border-border px-3 py-2 text-sm leading-relaxed">
+        {children}
+      </div>
     </details>
   );
 }

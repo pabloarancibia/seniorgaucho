@@ -22,14 +22,6 @@ export interface Progress {
 
 export type CodeLanguage = "python" | "typescript";
 
-export interface CodeSnippet {
-  id: string;
-  lessonId: string;
-  language: CodeLanguage;
-  codeContent: string;
-  updatedAt: string;
-}
-
 export interface QuizAnswer {
   id: string;
   lessonId: string;
@@ -38,3 +30,61 @@ export interface QuizAnswer {
   isCorrect: boolean;
   answeredAt: string;
 }
+
+export interface ExerciseCompletion {
+  id: string;
+  lessonId: string;
+  exerciseId: string;
+  completed: boolean;
+  completedAt: string;
+}
+
+export interface PracticeCodeSnippet {
+  id: string;
+  lessonId: string;
+  topicSlug: string;
+  language: CodeLanguage;
+  codeContent: string;
+  updatedAt: string;
+}
+
+export type LlmProviderKey = "anthropic" | "google" | "fake";
+
+export interface LlmProvidersResponse {
+  available: LlmProviderKey[];
+  default: LlmProviderKey;
+}
+
+export type PracticeChatSessionStatus = "ACTIVE" | "ARCHIVED";
+
+export interface PracticeChatSession {
+  id: string;
+  lessonId: string;
+  topicSlug: string;
+  status: PracticeChatSessionStatus;
+  providerKey: LlmProviderKey;
+  model: string;
+  locale: string;
+  startedAt: string;
+  lastActivityAt: string;
+}
+
+export type PracticeChatRole = "USER" | "ASSISTANT";
+
+export interface PracticeChatMessage {
+  id: string;
+  sessionId: string;
+  sequence: number;
+  role: PracticeChatRole;
+  text: string;
+  providerBlocks: unknown | null;
+  createdAt: string;
+}
+
+export type PracticeChatIntent = "hint" | "explain" | "free";
+
+/** Eventos del stream SSE de POST /practice-sessions/:sessionId/messages. */
+export type PracticeChatEvent =
+  | { type: "token"; text: string }
+  | { type: "done"; message: PracticeChatMessage }
+  | { type: "error"; code: string; message: string };

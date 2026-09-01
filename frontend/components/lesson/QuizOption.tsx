@@ -20,10 +20,10 @@ export function QuizOption({ children, onSelect, state = "idle", disabled }: Qui
       disabled={disabled}
       onClick={onSelect}
       className={[
-        "rounded-md border px-3 py-2 text-left text-sm transition-colors disabled:opacity-60",
+        "rounded-xl border px-3.5 py-2.5 text-left text-sm transition-all disabled:opacity-60",
         state === "correct" && "border-emerald-500 bg-emerald-500/10",
         state === "incorrect" && "border-red-500 bg-red-500/10",
-        state === "idle" && "border-border hover:border-accent",
+        state === "idle" && "border-border hover:-translate-y-0.5 hover:border-accent hover:shadow-sm",
       ]
         .filter(Boolean)
         .join(" ")}

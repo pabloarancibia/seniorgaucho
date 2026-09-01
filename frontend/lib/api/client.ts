@@ -1,6 +1,18 @@
-import type { CodeLanguage, CodeSnippet, Lesson, Progress, ProgressStatus, QuizAnswer } from "@/lib/api/types";
+import type {
+  CodeLanguage,
+  ExerciseCompletion,
+  Lesson,
+  LlmProviderKey,
+  LlmProvidersResponse,
+  PracticeChatMessage,
+  PracticeChatSession,
+  PracticeCodeSnippet,
+  Progress,
+  ProgressStatus,
+  QuizAnswer,
+} from "@/lib/api/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
 
 export class ApiError extends Error {
   constructor(
@@ -40,18 +52,40 @@ export const api = {
   upsertProgress: (lessonId: string, status: ProgressStatus) =>
     request<Progress>(`/lessons/${lessonId}/progress`, { method: "PUT", body: JSON.stringify({ status }) }),
 
-  getCodeSnippet: (lessonId: string, language: CodeLanguage) =>
-    request<CodeSnippet | null>(`/lessons/${lessonId}/code-snippets/${language}`),
-  saveCodeSnippet: (lessonId: string, language: CodeLanguage, codeContent: string) =>
-    request<CodeSnippet>(`/lessons/${lessonId}/code-snippets/${language}`, {
-      method: "PUT",
-      body: JSON.stringify({ codeContent }),
-    }),
-
   listQuizAnswers: (lessonId: string) => request<QuizAnswer[]>(`/lessons/${lessonId}/quiz-answers`),
   submitQuizAnswer: (lessonId: string, questionId: string, selectedOption: string, isCorrect: boolean) =>
     request<QuizAnswer>(`/lessons/${lessonId}/quiz-answers/${encodeURIComponent(questionId)}`, {
       method: "PUT",
       body: JSON.stringify({ selectedOption, isCorrect }),
     }),
+
+  listExerciseCompletions: (lessonId: string) =>
+    request<ExerciseCompletion[]>(`/lessons/${lessonId}/exercise-completions`),
+  submitExerciseCompletion: (lessonId: string, exerciseId: string, completed: boolean) =>
+    request<ExerciseCompletion>(`/lessons/${lessonId}/exercise-completions/${encodeURIComponent(exerciseId)}`, {
+      method: "PUT",
+      body: JSON.stringify({ completed }),
+    }),
+
+  getPracticeCodeSnippet: (lessonId: string, topicSlug: string, language: CodeLanguage) =>
+    request<PracticeCodeSnippet | null>(
+      `/lessons/${lessonId}/practice-code-snippets/${encodeURIComponent(topicSlug)}/${language}`
+    ),
+  savePracticeCodeSnippet: (lessonId: string, topicSlug: string, language: CodeLanguage, codeContent: string) =>
+    request<PracticeCodeSnippet>(
+      `/lessons/${lessonId}/practice-code-snippets/${encodeURIComponent(topicSlug)}/${language}`,
+      { method: "PUT", body: JSON.stringify({ codeContent }) }
+    ),
+
+  listLlmProviders: () => request<LlmProvidersResponse>("/llm-providers"),
+
+  startPracticeChatSession: (lessonId: string, topicSlug: string, providerKey?: LlmProviderKey, locale?: string) =>
+    request<PracticeChatSession>(`/lessons/${lessonId}/practice-sessions`, {
+      method: "POST",
+      body: JSON.stringify({ topicSlug, providerKey, locale }),
+    }),
+  getPracticeChatSession: (lessonId: string, sessionId: string) =>
+    request<{ session: PracticeChatSession; messages: PracticeChatMessage[] }>(
+      `/lessons/${lessonId}/practice-sessions/${sessionId}`
+    ),
 };

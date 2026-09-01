@@ -32,9 +32,12 @@ model Lesson {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  progress     Progress[]
-  codeSnippets CodeSnippet[]
-  quizAnswers  QuizAnswer[]
+  progress             Progress[]
+  codeSnippets         CodeSnippet[]
+  quizAnswers          QuizAnswer[]
+  exerciseCompletions  ExerciseCompletion[]
+  practiceCodeSnippets PracticeCodeSnippet[]
+  practiceChatSessions PracticeChatSession[]
 
   @@map("lessons")
 }
@@ -98,9 +101,109 @@ model QuizAnswer {
 }
 
 // ---------------------------------------------------------------------------
+// ExerciseCompletion: check de "completado" sobre los <Exercise /> del MDX
+// ---------------------------------------------------------------------------
+model ExerciseCompletion {
+  id          String    @id @default(cuid())
+  lessonId    String    @map("lesson_id")
+  // Slug derivado del title del <Exercise> (ver Exercise.tsx en frontend),
+  // no un id explícito escrito a mano en el MDX.
+  exerciseId  String    @map("exercise_id")
+  completed   Boolean   @default(true) @map("completed")
+  completedAt DateTime  @default(now()) @map("completed_at")
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  // Un registro de completitud por ejercicio dentro de una lección.
+  @@unique([lessonId, exerciseId])
+  @@map("exercise_completions")
+}
+
+// ---------------------------------------------------------------------------
+// PracticeCodeSnippet: estado del editor Monaco por lección/tema/lenguaje.
+// Separado de CodeSnippet (un buffer por lección entera) porque la pantalla
+// de práctica ahora es una por tema (<Section>) — ver split teoría/práctica.
+// Los CodeSnippet viejos quedan huérfanos, aceptable en un estudio de un
+// solo usuario.
+// ---------------------------------------------------------------------------
+model PracticeCodeSnippet {
+  id          String   @id @default(cuid())
+  lessonId    String   @map("lesson_id")
+  // slugify(Section.title) — mismo criterio que ExerciseCompletion.exerciseId.
+  topicSlug   String   @map("topic_slug")
+  language    String // "python" | "typescript"
+  codeContent String   @map("code_content")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  // Un snippet guardado por combinación lección + tema + lenguaje.
+  @@unique([lessonId, topicSlug, language])
+  @@map("practice_code_snippets")
+}
+
+// ---------------------------------------------------------------------------
+// PracticeChatSession / PracticeChatMessage: chat con IA (multi-LLM) de la
+// pantalla de práctica de un tema. Puede haber varias sesiones ARCHIVED por
+// (lessonId, topicSlug) a lo largo del tiempo — cambiar de proveedor (p. ej.
+// por cuota agotada) archiva la sesión ACTIVE y arranca una nueva en vez de
+// mezclar mensajes de dos proveedores en el mismo transcript.
+// ---------------------------------------------------------------------------
+enum PracticeChatSessionStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+model PracticeChatSession {
+  id             String                    @id @default(cuid())
+  lessonId       String                    @map("lesson_id")
+  // slugify-equivalente del Section.number activo — ver topicSlug en
+  // extractTopicSlugs.ts (frontend) / ExerciseContentExtractor.ts (backend).
+  topicSlug      String                    @map("topic_slug")
+  status         PracticeChatSessionStatus @default(ACTIVE)
+  providerKey    String                    @map("provider_key")
+  model          String
+  locale         String                    @default("es")
+  startedAt      DateTime                  @default(now()) @map("started_at")
+  lastActivityAt DateTime                  @updatedAt @map("last_activity_at")
+
+  lesson   Lesson                @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  messages PracticeChatMessage[]
+
+  @@index([lessonId, topicSlug, status])
+  @@map("practice_chat_sessions")
+}
+
+enum PracticeChatRole {
+  USER
+  ASSISTANT
+}
+
+model PracticeChatMessage {
+  id                 String           @id @default(cuid())
+  sessionId          String           @map("session_id")
+  sequence           Int
+  role               PracticeChatRole
+  text               String           @default("")
+  // Bloques crudos del proveedor (thinking blocks de Anthropic, parts de
+  // Gemini, etc.) — se reenvían verbatim si la sesión sigue con el mismo
+  // proveedor. Sin tool calls en v1 (ver SendPracticeChatMessageUseCase),
+  // así que no hace falta toolCallsJson/toolResultJson.
+  providerBlocksJson String?          @map("provider_blocks_json")
+  createdAt          DateTime         @default(now()) @map("created_at")
+
+  session PracticeChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, sequence])
+  @@index([sessionId, createdAt])
+  @@map("practice_chat_messages")
+}
+
+// ---------------------------------------------------------------------------
 // Notas de escalado (para cuando esto se convierta en multi-usuario/SaaS):
-// - Agregar modelo User y userId (FK) en Progress, CodeSnippet y QuizAnswer,
-//   reemplazando los @@unique actuales por @@unique([userId, lessonId, ...]).
+// - Agregar modelo User y userId (FK) en Progress, CodeSnippet, QuizAnswer
+//   y ExerciseCompletion, reemplazando los @@unique actuales por
+//   @@unique([userId, lessonId, ...]).
 // - Cambiar datasource a postgresql y correr `prisma migrate dev` de nuevo;
 //   los enums pasan de emulados (SQLite) a nativos (Postgres) sin tocar el
 //   schema de dominio.

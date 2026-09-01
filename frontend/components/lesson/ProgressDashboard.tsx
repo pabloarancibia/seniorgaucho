@@ -48,11 +48,13 @@ export function ProgressDashboard({ lessons, progressByLessonId }: ProgressDashb
     `    bar [${perModule.map((m) => m.loaded).join(", ")}]`,
   ].join("\n");
 
+  const completionPercent = Math.round((statusCounts.COMPLETED / lessons.length) * 100);
+
   return (
-    <div className="mb-6 rounded-lg border border-border p-4">
+    <div className="mb-6 rounded-2xl border border-border p-5 sm:p-6">
       <div className="mb-4 flex items-center justify-between gap-4">
         <div>
-          <h2 className="font-semibold">{t("dashboard.title")}</h2>
+          <h2 className="text-lg font-bold">{t("dashboard.title")}</h2>
           <p className="text-sm text-fg-muted">
             {statusCounts.COMPLETED}/{lessons.length} {t("dashboard.completedLabel")}
           </p>
@@ -60,13 +62,26 @@ export function ProgressDashboard({ lessons, progressByLessonId }: ProgressDashb
         {continueLesson ? (
           <Link
             href={`/lessons/${continueLesson.slug}`}
-            className="shrink-0 rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-accent-fg"
+            className="shrink-0 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-fg transition-transform hover:scale-105"
           >
             {t("dashboard.continue")}
           </Link>
         ) : (
-          <span className="shrink-0 text-sm text-fg-muted">{t("dashboard.allDone")}</span>
+          <span className="shrink-0 text-sm font-medium text-accent-secondary">{t("dashboard.allDone")}</span>
         )}
+      </div>
+
+      <div
+        role="progressbar"
+        aria-valuenow={completionPercent}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        className="mb-5 h-3 w-full overflow-hidden rounded-full bg-bg-subtle"
+      >
+        <div
+          style={{ width: `${completionPercent}%` }}
+          className="h-full rounded-full bg-gradient-to-r from-accent to-accent-secondary transition-[width] duration-500"
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

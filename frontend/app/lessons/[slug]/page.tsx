@@ -2,8 +2,7 @@ import { notFound } from "next/navigation";
 import { ApiError, api } from "@/lib/api/client";
 import { MdxContent } from "@/components/lesson/MdxContent";
 import { LessonTheory } from "@/components/lesson/LessonTheory";
-import { CodeEditorPanel } from "@/components/editor/CodeEditorPanel";
-import { ResizableSplitPane } from "@/components/layout/ResizableSplitPane";
+import { extractPracticableTopicSlugs } from "@/lib/lesson/extractTopicSlugs";
 
 interface LessonPageProps {
   params: Promise<{ slug: string }>;
@@ -18,18 +17,37 @@ export default async function LessonPage({ params }: LessonPageProps) {
   });
 
   return (
-    <ResizableSplitPane
-      left={
-        <LessonTheory
-          titleEs={lesson.title}
-          titleEn={lesson.titleEn}
-          contentEs={<MdxContent source={lesson.mdxContent} lessonId={lesson.id} />}
-          contentEn={
-            lesson.mdxContentEn ? <MdxContent source={lesson.mdxContentEn} lessonId={lesson.id} /> : null
-          }
-        />
-      }
-      right={<CodeEditorPanel lessonId={lesson.id} />}
-    />
+    <div className="mx-auto max-w-3xl px-6 py-8">
+      <LessonTheory
+        titleEs={lesson.title}
+        titleEn={lesson.titleEn}
+        contentEs={
+          <MdxContent
+            source={lesson.mdxContent}
+            lessonId={lesson.id}
+            opts={{
+              mode: "theory",
+              lessonSlug: slug,
+              locale: "es",
+              practicableTopicSlugs: extractPracticableTopicSlugs(lesson.mdxContent),
+            }}
+          />
+        }
+        contentEn={
+          lesson.mdxContentEn ? (
+            <MdxContent
+              source={lesson.mdxContentEn}
+              lessonId={lesson.id}
+              opts={{
+                mode: "theory",
+                lessonSlug: slug,
+                locale: "en",
+                practicableTopicSlugs: extractPracticableTopicSlugs(lesson.mdxContentEn),
+              }}
+            />
+          ) : null
+        }
+      />
+    </div>
   );
 }
