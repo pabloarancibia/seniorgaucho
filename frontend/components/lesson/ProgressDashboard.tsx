@@ -4,27 +4,50 @@ import Link from "next/link";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { MermaidChart } from "@/components/lesson/MermaidChart";
 import { syllabus } from "@/lib/syllabus/data";
-import type { Lesson, ProgressStatus } from "@/lib/api/types";
+import type { Lesson } from "@/lib/api/types";
+
+interface ExerciseCount {
+  completed: number;
+  total: number;
+}
 
 interface ProgressDashboardProps {
   lessons: Lesson[];
-  progressByLessonId: Record<string, ProgressStatus>;
+  /** Ejercicios completados/total por lección, por locale (el exerciseId difiere por título traducido) — ver extractAllExerciseIds. */
+  completionByLessonId: Record<string, { es: ExerciseCount; en: ExerciseCount }>;
 }
 
-export function ProgressDashboard({ lessons, progressByLessonId }: ProgressDashboardProps) {
-  const { t } = useLocale();
+export function ProgressDashboard({ lessons, completionByLessonId }: ProgressDashboardProps) {
+  const { t, locale } = useLocale();
 
   if (lessons.length === 0) return null;
 
-  const statusCounts: Record<ProgressStatus, number> = { PENDING: 0, IN_PROGRESS: 0, COMPLETED: 0 };
-  for (const lesson of lessons) {
-    const status = progressByLessonId[lesson.id] ?? "PENDING";
-    statusCounts[status] += 1;
-  }
+  const countFor = (lessonId: string): ExerciseCount => {
+    const counts = completionByLessonId[lessonId];
+    if (!counts) return { completed: 0, total: 0 };
+    return locale === "en" && counts.en.total > 0 ? counts.en : counts.es;
+  };
 
+  const totals = lessons.reduce(
+    (acc, lesson) => {
+      const count = countFor(lesson.id);
+      return { completed: acc.completed + count.completed, total: acc.total + count.total };
+    },
+    { completed: 0, total: 0 }
+  );
+
+  const doneLessons = lessons.filter((lesson) => {
+    const count = countFor(lesson.id);
+    return count.total > 0 && count.completed === count.total;
+  }).length;
+
+  // "Seguir donde quedé": la primera lección con progreso a medias, o si no
+  // hay ninguna, la primera sin empezar.
   const continueLesson =
-    lessons.find((lesson) => progressByLessonId[lesson.id] === "IN_PROGRESS") ??
-    lessons.find((lesson) => (progressByLessonId[lesson.id] ?? "PENDING") === "PENDING");
+    lessons.find((lesson) => {
+      const count = countFor(lesson.id);
+      return count.completed > 0 && count.completed < count.total;
+    }) ?? lessons.find((lesson) => countFor(lesson.id).completed === 0);
 
   const loadedSlugs = new Set(lessons.map((lesson) => lesson.slug));
   const perModule = syllabus.map((module) => ({
@@ -33,11 +56,11 @@ export function ProgressDashboard({ lessons, progressByLessonId }: ProgressDashb
   }));
   const maxPerModule = Math.max(1, ...perModule.map((m) => m.total));
 
+  const pending = Math.max(0, totals.total - totals.completed);
   const pieDefinition = [
     `pie showData title ${t("dashboard.pie.title")}`,
-    `    "${t("lesson.status.completed")}" : ${statusCounts.COMPLETED}`,
-    `    "${t("lesson.status.in_progress")}" : ${statusCounts.IN_PROGRESS}`,
-    `    "${t("lesson.status.pending")}" : ${statusCounts.PENDING}`,
+    `    "${t("lesson.status.completed")}" : ${totals.completed}`,
+    `    "${t("lesson.status.pending")}" : ${pending}`,
   ].join("\n");
 
   const barDefinition = [
@@ -48,7 +71,7 @@ export function ProgressDashboard({ lessons, progressByLessonId }: ProgressDashb
     `    bar [${perModule.map((m) => m.loaded).join(", ")}]`,
   ].join("\n");
 
-  const completionPercent = Math.round((statusCounts.COMPLETED / lessons.length) * 100);
+  const completionPercent = totals.total > 0 ? Math.round((totals.completed / totals.total) * 100) : 0;
 
   return (
     <div className="mb-6 rounded-2xl border border-border p-5 sm:p-6">
@@ -56,7 +79,8 @@ export function ProgressDashboard({ lessons, progressByLessonId }: ProgressDashb
         <div>
           <h2 className="text-lg font-bold">{t("dashboard.title")}</h2>
           <p className="text-sm text-fg-muted">
-            {statusCounts.COMPLETED}/{lessons.length} {t("dashboard.completedLabel")}
+            {doneLessons}/{lessons.length} {t("dashboard.completedLabel")} · {totals.completed}/{totals.total}{" "}
+            {t("editor.exercisesCompleted")}
           </p>
         </div>
         {continueLesson ? (

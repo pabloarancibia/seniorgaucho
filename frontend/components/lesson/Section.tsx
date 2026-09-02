@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { slugify } from "@/lib/lesson/slugify";
+import { NextSectionButton } from "@/components/lesson/NextSectionButton";
 
 interface SectionProps {
   /**
@@ -14,13 +15,8 @@ interface SectionProps {
   children: ReactNode;
   /** Abierta por default — normalmente solo el primer punto de la lección. */
   defaultOpen?: boolean;
-  /**
-   * Inyectados por mdxComponents según la pantalla (teoría vs práctica), no
-   * los escribe el autor del MDX.
-   */
-  mode?: "theory" | "practice";
+  /** Inyectados por mdxComponents (modo teoría), no los escribe el autor del MDX. */
   lessonSlug?: string;
-  activeTopicSlug?: string;
   locale?: "es" | "en";
   /**
    * Topics (topicSlug) que tienen al menos un <Exercise> — decide el CTA de
@@ -35,9 +31,12 @@ interface SectionProps {
    * confiable acá.
    */
   practicableTopicSlugs?: Set<string>;
+  /** Orden real de los topicSlug de la lección — habilita el botón "Siguiente tema" al pie. */
+  orderedTopicSlugs?: string[];
 }
 
 const CTA_LABEL = { es: "Practicá este tema →", en: "Practice this topic →" };
+const NEXT_LABEL = { es: "Siguiente tema ↓", en: "Next topic ↓" };
 
 /**
  * Acordeón para cada punto numerado de la teoría de una lección (## 1.,
@@ -47,40 +46,35 @@ const CTA_LABEL = { es: "Practicá este tema →", en: "Practice this topic →"
  * se sigue renderizando normal vía los componentes de mdxComponents.tsx —
  * Section solo agrega el contenedor colapsable alrededor.
  *
+ * Solo aparece en modo teoría — mdxComponents.tsx lo mapea a `null` en modo
+ * práctica, donde ni siquiera hace falta: el fragmento que se compila ahí
+ * ya viene recortado a los <Exercise> de un solo tema (ver
+ * extractExerciseBlocksForTopic), nunca incluye un <Section> completo con
+ * su prosa teórica.
+ *
  * También es la unidad de ruteo de la pantalla de práctica: "topic-{number}"
  * es el "topicSlug" de /lessons/[slug]/practice/[topicSlug]. Se deriva de
  * `number`, NO de `title` — el título está traducido entre mdxContent (ES)
  * y mdxContentEn (EN), así que slugificarlo daría un slug distinto por
- * idioma para el mismo tema, y la pantalla de práctica compila ambas
- * versiones con el mismo activeTopicSlug (para poder togglear idioma sin
- * cambiar de ruta) — quedaría en blanco la que no matchee. `number` es
- * estable entre idiomas. Fallback a slugify(title) solo si un <Section>
- * queda sin `number` (no debería pasar en contenido nuevo).
- * En mode="practice" no se muestra como acordeón: solo la Section cuyo
- * topicSlug matchea activeTopicSlug renderiza (el resto retorna null), sin
- * el chrome de <details> — la pantalla de práctica ya es exclusiva para ese
- * tema. En mode="theory" (default), si contiene algún <Exercise> se agrega
- * un CTA al final para saltar a esa pantalla de práctica.
+ * idioma para el mismo tema. `number` es estable entre idiomas. Fallback a
+ * slugify(title) solo si un <Section> queda sin `number` (no debería pasar
+ * en contenido nuevo). Si contiene algún <Exercise> se agrega un CTA al
+ * final para saltar a la pantalla de práctica de ese tema.
  */
 export function Section({
   number,
   title,
   children,
   defaultOpen = false,
-  mode = "theory",
   lessonSlug,
-  activeTopicSlug,
   locale = "es",
   practicableTopicSlugs,
+  orderedTopicSlugs,
 }: SectionProps) {
   const topicSlug = number !== undefined ? `topic-${number}` : slugify(title);
-
-  if (mode === "practice") {
-    if (topicSlug !== activeTopicSlug) return null;
-    return <div className="not-prose space-y-4">{children}</div>;
-  }
-
   const showPracticeCta = lessonSlug !== undefined && (practicableTopicSlugs?.has(topicSlug) ?? false);
+  const ownIndex = orderedTopicSlugs?.indexOf(topicSlug) ?? -1;
+  const nextTopicSlug = ownIndex !== -1 ? orderedTopicSlugs?.[ownIndex + 1] : undefined;
 
   return (
     <details
@@ -100,13 +94,20 @@ export function Section({
       </summary>
       <div className="accordion-content space-y-4 px-5 py-5">
         {children}
-        {showPracticeCta && (
-          <Link
-            href={`/lessons/${lessonSlug}/practice/${topicSlug}`}
-            className="not-prose inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-fg transition-transform hover:scale-105"
-          >
-            {CTA_LABEL[locale]}
-          </Link>
+        {(showPracticeCta || nextTopicSlug) && (
+          <div className="flex flex-wrap items-center gap-3">
+            {showPracticeCta && (
+              <Link
+                href={`/lessons/${lessonSlug}/practice/${topicSlug}`}
+                className="not-prose inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-fg transition-transform hover:scale-105"
+              >
+                {CTA_LABEL[locale]}
+              </Link>
+            )}
+            {nextTopicSlug && (
+              <NextSectionButton currentTopicSlug={topicSlug} nextTopicSlug={nextTopicSlug} label={NEXT_LABEL[locale]} />
+            )}
+          </div>
         )}
       </div>
     </details>

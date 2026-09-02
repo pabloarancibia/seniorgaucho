@@ -4,7 +4,17 @@ import type { PracticeCodeSnippetRepository } from "@domain/practice-code-snippe
 export class GetPracticeCodeSnippetUseCase {
   constructor(private readonly practiceCodeSnippetRepository: PracticeCodeSnippetRepository) {}
 
-  async execute(lessonId: string, topicSlug: string, language: string): Promise<PracticeCodeSnippet | null> {
-    return this.practiceCodeSnippetRepository.findByLessonTopicAndLanguage(lessonId, topicSlug, language);
+  async execute(
+    lessonId: string,
+    topicSlug: string,
+    exerciseId: string,
+    language: string
+  ): Promise<PracticeCodeSnippet | null> {
+    return this.practiceCodeSnippetRepository.findByLessonTopicExerciseAndLanguage(
+      lessonId,
+      topicSlug,
+      exerciseId,
+      language
+    );
   }
 }

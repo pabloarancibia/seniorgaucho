@@ -8,26 +8,28 @@ import { ProviderSelect } from "@/components/layout/ProviderSelect";
 import { MessageList } from "@/components/practiceTutor/MessageList";
 import { QuickActions } from "@/components/practiceTutor/QuickActions";
 import { ChatComposer } from "@/components/practiceTutor/ChatComposer";
-import type { CodeLanguage } from "@/lib/api/types";
 
 interface PracticeChatPanelProps {
   lessonId: string;
   topicSlug: string;
-  /** Código y lenguaje actuales del editor (PracticeCodeEditorPanel), para dar contexto al mentor. */
+  /** Código actual del editor (PracticeCodeEditorPanel), para dar contexto al mentor. */
   currentCode: string;
-  currentLanguage: CodeLanguage;
 }
 
 /**
  * Panel derecho de la pantalla de práctica: chat con IA (multi-LLM) para
  * pistas, explicaciones y preguntas libres sobre el tema activo. Ve el
- * código actual del editor en cada mensaje (currentCode/currentLanguage) —
- * ver usePracticeChatSession.sendMessage.
+ * código actual del editor en cada mensaje (currentCode, prop) y el
+ * lenguaje seleccionado (selectedLanguage, del ActiveExerciseContext — lo
+ * escribe PracticeCodeEditorPanel) — ver usePracticeChatSession.sendMessage.
  */
-export function PracticeChatPanel({ lessonId, topicSlug, currentCode, currentLanguage }: PracticeChatPanelProps) {
+export function PracticeChatPanel({ lessonId, topicSlug, currentCode }: PracticeChatPanelProps) {
   const { locale, t } = useLocale();
   const { providerKey } = useProviderPreference();
-  const { activeExerciseId } = useActiveExercise() ?? { activeExerciseId: undefined };
+  const { activeExerciseId, selectedLanguage } = useActiveExercise() ?? {
+    activeExerciseId: undefined,
+    selectedLanguage: "python" as const,
+  };
   const { session, messages, loading, isStreaming, streamingText, error, sendMessage } = usePracticeChatSession(
     lessonId,
     topicSlug,
@@ -53,12 +55,12 @@ export function PracticeChatPanel({ lessonId, topicSlug, currentCode, currentLan
           <QuickActions
             disabled={disabled}
             onSelect={(text, intent) =>
-              sendMessage(text, currentCode, currentLanguage, intent, activeExerciseId ?? undefined)
+              sendMessage(text, currentCode, selectedLanguage, intent, activeExerciseId ?? undefined)
             }
           />
           <ChatComposer
             disabled={disabled}
-            onSend={(text) => sendMessage(text, currentCode, currentLanguage, "free", activeExerciseId ?? undefined)}
+            onSend={(text) => sendMessage(text, currentCode, selectedLanguage, "free", activeExerciseId ?? undefined)}
           />
         </>
       )}

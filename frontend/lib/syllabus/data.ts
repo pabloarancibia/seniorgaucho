@@ -57,7 +57,7 @@ export const syllabus: SyllabusModule[] = [
         code: "0.5",
         title: "Reto de Live Coding — Refactorización Extrema y Algoritmia Base",
         titleEn: "Live Coding Challenge — Extreme Refactoring and Core Algorithms",
-        slug: null,
+        slug: "m0-0-5-refactorizacion-extrema-algoritmia-base",
       },
     ],
   },
@@ -69,7 +69,7 @@ export const syllabus: SyllabusModule[] = [
         code: "1.1",
         title: "Runtime, Event Loop y Adaptación Externa: Concurrencia y Backpressure",
         titleEn: "Runtime, Event Loop, and External Adaptation: Concurrency and Backpressure",
-        slug: null,
+        slug: "m1-1-1-runtime-event-loop-concurrencia-backpressure",
       },
       {
         code: "1.2",

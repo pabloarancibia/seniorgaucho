@@ -13,7 +13,7 @@ export function ThemeToggle() {
       aria-label={t("theme.toggle")}
       title={t("theme.toggle")}
       onClick={toggleTheme}
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-fg-muted transition-all hover:border-accent hover:text-accent hover:scale-105"
+      className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-fg-muted transition-all hover:border-accent hover:text-accent hover:scale-105"
     >
       {theme === "dark" ? "☀️" : "🌙"}
     </button>

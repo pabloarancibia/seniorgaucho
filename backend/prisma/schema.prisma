@@ -127,18 +127,21 @@ model ExerciseCompletion {
 // solo usuario.
 // ---------------------------------------------------------------------------
 model PracticeCodeSnippet {
-  id          String   @id @default(cuid())
-  lessonId    String   @map("lesson_id")
+  id       String @id @default(cuid())
+  lessonId String @map("lesson_id")
   // slugify(Section.title) — mismo criterio que ExerciseCompletion.exerciseId.
-  topicSlug   String   @map("topic_slug")
+  topicSlug String @map("topic_slug")
+  // slugify(Exercise.title), o el sentinel "_default" mientras no haya
+  // ningún ejercicio activo puntual (ver ActiveExerciseContext).
+  exerciseId  String   @map("exercise_id")
   language    String // "python" | "typescript"
   codeContent String   @map("code_content")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
-  // Un snippet guardado por combinación lección + tema + lenguaje.
-  @@unique([lessonId, topicSlug, language])
+  // Un snippet guardado por combinación lección + tema + ejercicio + lenguaje.
+  @@unique([lessonId, topicSlug, exerciseId, language])
   @@map("practice_code_snippets")
 }
 

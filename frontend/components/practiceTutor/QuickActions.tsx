@@ -17,14 +17,14 @@ export function QuickActions({ onSelect, disabled }: QuickActionsProps) {
   ];
 
   return (
-    <div className="flex flex-wrap gap-2 border-t border-border px-4 py-3">
+    <div className="flex flex-wrap gap-1.5 border-t border-border px-3 py-2">
       {actions.map((action) => (
         <button
           key={action.label}
           type="button"
           disabled={disabled}
           onClick={() => onSelect(action.text, action.intent)}
-          className="rounded-full border border-border bg-bg-subtle px-3 py-1.5 text-xs font-medium text-fg-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-full border border-border bg-bg-subtle px-2.5 py-1 text-xs font-medium text-fg-muted transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-50"
         >
           {action.label}
         </button>

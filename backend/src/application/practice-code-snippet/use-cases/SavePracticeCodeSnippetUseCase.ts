@@ -12,6 +12,7 @@ export class SavePracticeCodeSnippetUseCase {
   async execute(
     lessonId: string,
     topicSlug: string,
+    exerciseId: string,
     language: string,
     codeContent: string
   ): Promise<PracticeCodeSnippet> {
@@ -20,6 +21,6 @@ export class SavePracticeCodeSnippetUseCase {
       throw new NotFoundError(`No se encontró la lección con id "${lessonId}"`);
     }
 
-    return this.practiceCodeSnippetRepository.upsert(lessonId, topicSlug, language, codeContent);
+    return this.practiceCodeSnippetRepository.upsert(lessonId, topicSlug, exerciseId, language, codeContent);
   }
 }

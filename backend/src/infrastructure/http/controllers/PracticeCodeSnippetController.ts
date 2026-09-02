@@ -9,23 +9,31 @@ export class PracticeCodeSnippetController {
   ) {}
 
   get = async (req: Request, res: Response): Promise<void> => {
-    const { lessonId, topicSlug, language } = req.params as {
+    const { lessonId, topicSlug, exerciseId, language } = req.params as {
       lessonId: string;
       topicSlug: string;
+      exerciseId: string;
       language: string;
     };
-    const snippet = await this.getPracticeCodeSnippetUseCase.execute(lessonId, topicSlug, language);
+    const snippet = await this.getPracticeCodeSnippetUseCase.execute(lessonId, topicSlug, exerciseId, language);
     res.json(snippet ? snippet.toPrimitives() : null);
   };
 
   save = async (req: Request, res: Response): Promise<void> => {
-    const { lessonId, topicSlug, language } = req.params as {
+    const { lessonId, topicSlug, exerciseId, language } = req.params as {
       lessonId: string;
       topicSlug: string;
+      exerciseId: string;
       language: string;
     };
     const { codeContent } = req.body as { codeContent: string };
-    const snippet = await this.savePracticeCodeSnippetUseCase.execute(lessonId, topicSlug, language, codeContent);
+    const snippet = await this.savePracticeCodeSnippetUseCase.execute(
+      lessonId,
+      topicSlug,
+      exerciseId,
+      language,
+      codeContent
+    );
     res.json(snippet.toPrimitives());
   };
 }

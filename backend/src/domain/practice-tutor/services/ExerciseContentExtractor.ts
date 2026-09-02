@@ -35,6 +35,7 @@ const SECTION_TAG_REGEX = /<Section\b([^>]*)>/g;
 const NUMBER_ATTR_REGEX = /\bnumber="([^"]*)"/;
 const EXERCISE_BLOCK_REGEX = /<Exercise\b([^>]*)>([\s\S]*?)<\/Exercise>/g;
 const HINT_BLOCK_REGEX = /<Hint\b[^>]*>([\s\S]*?)<\/Hint>/g;
+const STARTER_TAGS_REGEX = /<\/?ExerciseStarter>/g;
 
 function extractAttr(tag: string, name: string): string | undefined {
   const doubleQuoted = new RegExp(`\\b${name}="((?:[^"\\\\]|\\\\.)*)"`).exec(tag);
@@ -80,7 +81,11 @@ function extractExercises(sectionBody: string): ExtractedExercise[] {
       hints.push({ level, text: hintText.trim() });
     }
 
-    const promptText = inner.replace(HINT_BLOCK_REGEX, "").trim();
+    // El código de arranque/tests (<ExerciseStarter>) sí queda — es contexto
+    // útil para el mentor (ve el esqueleto/HUECOs igual que el estudiante) —
+    // solo se sacan las etiquetas del wrapper para que el prompt no tenga
+    // markup MDX crudo alrededor del código.
+    const promptText = inner.replace(HINT_BLOCK_REGEX, "").replace(STARTER_TAGS_REGEX, "").trim();
     exercises.push({ id: slugify(title), title, language, promptText, hints });
   }
 

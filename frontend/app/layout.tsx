@@ -4,6 +4,7 @@ import { LocaleProvider } from "@/lib/i18n/LocaleProvider";
 import { ThemeProvider } from "@/lib/theme/ThemeProvider";
 import { ProviderPreferenceProvider } from "@/lib/llm/ProviderPreferenceProvider";
 import { Header } from "@/components/layout/Header";
+import { LocaleToggle } from "@/components/layout/LocaleToggle";
 import { THEME_STORAGE_KEY } from "@/lib/theme/constants";
 import "./globals.css";
 
@@ -35,6 +36,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <ProviderPreferenceProvider>
               <Header />
               <main className="min-h-[calc(100vh-4rem)]">{children}</main>
+              {/* Fijo, fuera del flujo — visible en cualquier pantalla, incluida
+                  la de práctica (layout de altura fija propio, sin scroll de body). */}
+              <div className="fixed bottom-4 left-4 z-50">
+                <LocaleToggle />
+              </div>
             </ProviderPreferenceProvider>
           </LocaleProvider>
         </ThemeProvider>

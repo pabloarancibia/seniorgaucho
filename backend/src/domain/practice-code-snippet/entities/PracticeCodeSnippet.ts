@@ -2,6 +2,7 @@ export interface PracticeCodeSnippetProps {
   id: string;
   lessonId: string;
   topicSlug: string;
+  exerciseId: string;
   language: string;
   codeContent: string;
   updatedAt: Date;
@@ -20,6 +21,10 @@ export class PracticeCodeSnippet {
 
   get topicSlug(): string {
     return this.props.topicSlug;
+  }
+
+  get exerciseId(): string {
+    return this.props.exerciseId;
   }
 
   get language(): string {

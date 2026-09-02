@@ -31,13 +31,21 @@ interface SectionMdxProps {
 /**
  * Modo de renderizado del MDX de una lección: "theory" es la pantalla de
  * lectura de siempre (con un CTA por tema hacia su pantalla de práctica);
- * "practice" renderiza el mismo MDX pero filtrado a un solo <Section>
- * (activeTopicSlug) y solo sus <Exercise>/<Hint>, sin <QuizCard>/<Concept>.
- * Ver Section.tsx y frontend/app/lessons/[slug]/practice/[topicSlug].
+ * "practice" compila un FRAGMENTO ya recortado a los <Exercise> de un solo
+ * tema (ver extractExerciseBlocksForTopic en extractTopicSlugs.ts) — nunca
+ * incluye <Section>/<Concept>/<QuizCard> porque esos ya se descartaron
+ * antes de compilar, no hace falta filtrarlos acá.
  */
 export type MdxRenderOptions =
-  | { mode: "theory"; lessonSlug: string; locale: "es" | "en"; practicableTopicSlugs: Set<string> }
-  | { mode: "practice"; activeTopicSlug: string };
+  | {
+      mode: "theory";
+      lessonSlug: string;
+      locale: "es" | "en";
+      practicableTopicSlugs: Set<string>;
+      /** Orden real de los `<Section number="N">` de esta lección — habilita el botón "Siguiente tema". */
+      orderedTopicSlugs: string[];
+    }
+  | { mode: "practice"; starterCodeByExerciseId?: Record<string, string> };
 
 /**
  * Mapa de componentes disponibles dentro del MDX de una lección, más
@@ -54,21 +62,33 @@ export function createMdxComponents(lessonId: string, opts: MdxRenderOptions): M
     // Section.tsx detecta `child.type === Exercise` para decidir si muestra
     // el CTA "Practicá este tema", y perdería esa identidad si se swapeara
     // acá. Exercise decide internamente si renderiza según `mode`.
-    Exercise: (props: ExerciseMdxProps) => <Exercise {...props} lessonId={lessonId} mode={opts.mode} />,
+    Exercise: (props: ExerciseMdxProps) => (
+      <Exercise
+        {...props}
+        lessonId={lessonId}
+        mode={opts.mode}
+        starterCodeByExerciseId={opts.mode === "practice" ? opts.starterCodeByExerciseId : undefined}
+      />
+    ),
+    // Su código se extrae del MDX crudo (extractStarterCodeByExercise) y se
+    // precarga directo en el editor — mostrarlo también acá sería
+    // redundante. Nunca se renderiza, en ningún modo.
+    ExerciseStarter: () => null,
     Concept: isPractice ? () => null : Concept,
     Hint,
+    // Section solo aparece en modo teoría — el fragmento que se compila en
+    // modo práctica ya viene recortado a los <Exercise> de un solo tema
+    // (ver extractExerciseBlocksForTopic), nunca incluye <Section>.
     Section: (props: SectionMdxProps) =>
-      isPractice ? (
-        <Section {...props} mode="practice" activeTopicSlug={opts.activeTopicSlug} />
-      ) : (
+      opts.mode === "theory" ? (
         <Section
           {...props}
-          mode="theory"
           lessonSlug={opts.lessonSlug}
           locale={opts.locale}
           practicableTopicSlugs={opts.practicableTopicSlugs}
+          orderedTopicSlugs={opts.orderedTopicSlugs}
         />
-      ),
+      ) : null,
     h1: (props) => <h1 className="mb-4 mt-8 text-2xl font-bold" {...props} />,
     h2: (props) => <h2 className="mb-3 mt-8 text-xl font-semibold" {...props} />,
     h3: (props) => <h3 className="mb-2 mt-6 text-lg font-semibold" {...props} />,

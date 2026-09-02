@@ -8,13 +8,14 @@ import type {
 export class PrismaPracticeCodeSnippetRepository implements PracticeCodeSnippetRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async findByLessonTopicAndLanguage(
+  async findByLessonTopicExerciseAndLanguage(
     lessonId: string,
     topicSlug: string,
+    exerciseId: string,
     language: string
   ): Promise<PracticeCodeSnippet | null> {
     const record = await this.prisma.practiceCodeSnippet.findUnique({
-      where: { lessonId_topicSlug_language: { lessonId, topicSlug, language } },
+      where: { lessonId_topicSlug_exerciseId_language: { lessonId, topicSlug, exerciseId, language } },
     });
     return record ? PrismaPracticeCodeSnippetRepository.toDomain(record) : null;
   }
@@ -22,12 +23,13 @@ export class PrismaPracticeCodeSnippetRepository implements PracticeCodeSnippetR
   async upsert(
     lessonId: string,
     topicSlug: string,
+    exerciseId: string,
     language: string,
     codeContent: string
   ): Promise<PracticeCodeSnippet> {
     const record = await this.prisma.practiceCodeSnippet.upsert({
-      where: { lessonId_topicSlug_language: { lessonId, topicSlug, language } },
-      create: { lessonId, topicSlug, language, codeContent },
+      where: { lessonId_topicSlug_exerciseId_language: { lessonId, topicSlug, exerciseId, language } },
+      create: { lessonId, topicSlug, exerciseId, language, codeContent },
       update: { codeContent },
     });
     return PrismaPracticeCodeSnippetRepository.toDomain(record);

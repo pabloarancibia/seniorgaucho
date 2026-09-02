@@ -43,6 +43,7 @@ export interface PracticeCodeSnippet {
   id: string;
   lessonId: string;
   topicSlug: string;
+  exerciseId: string;
   language: CodeLanguage;
   codeContent: string;
   updatedAt: string;

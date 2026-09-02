@@ -3,21 +3,32 @@
 import Link from "next/link";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { ProgressDashboard } from "@/components/lesson/ProgressDashboard";
-import type { Lesson, ProgressStatus } from "@/lib/api/types";
+import type { Lesson } from "@/lib/api/types";
+
+interface ExerciseCount {
+  completed: number;
+  total: number;
+}
 
 interface LessonsListProps {
   lessons: Lesson[];
-  progressByLessonId: Record<string, ProgressStatus>;
+  /** Ejercicios completados/total por lección, por locale (el exerciseId difiere por título traducido) — ver extractAllExerciseIds. */
+  completionByLessonId: Record<string, { es: ExerciseCount; en: ExerciseCount }>;
 }
 
-export function LessonsList({ lessons, progressByLessonId }: LessonsListProps) {
+export function LessonsList({ lessons, completionByLessonId }: LessonsListProps) {
   const { t, locale } = useLocale();
+  const countFor = (lessonId: string): ExerciseCount => {
+    const counts = completionByLessonId[lessonId];
+    if (!counts) return { completed: 0, total: 0 };
+    return locale === "en" && counts.en.total > 0 ? counts.en : counts.es;
+  };
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
       <h1 className="mb-6 text-3xl font-extrabold tracking-tight">{t("lessons.title")}</h1>
 
-      <ProgressDashboard lessons={lessons} progressByLessonId={progressByLessonId} />
+      <ProgressDashboard lessons={lessons} completionByLessonId={completionByLessonId} />
 
       <Link
         href="/temario"
@@ -36,7 +47,8 @@ export function LessonsList({ lessons, progressByLessonId }: LessonsListProps) {
       ) : (
         <ul className="flex flex-col gap-3">
           {lessons.map((lesson) => {
-            const status = progressByLessonId[lesson.id] ?? "PENDING";
+            const count = countFor(lesson.id);
+            const isDone = count.total > 0 && count.completed === count.total;
             return (
               <li key={lesson.id}>
                 <Link
@@ -49,14 +61,14 @@ export function LessonsList({ lessons, progressByLessonId }: LessonsListProps) {
                   <span
                     className={[
                       "shrink-0 rounded-full px-2.5 py-1 text-xs font-medium",
-                      status === "COMPLETED" && "bg-accent-secondary/15 text-accent-secondary",
-                      status === "IN_PROGRESS" && "bg-accent-warm/15 text-accent-warm",
-                      status === "PENDING" && "bg-border/50 text-fg-muted",
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
+                      isDone
+                        ? "bg-accent-secondary/15 text-accent-secondary"
+                        : count.completed > 0
+                          ? "bg-accent-warm/15 text-accent-warm"
+                          : "bg-border/50 text-fg-muted",
+                    ].join(" ")}
                   >
-                    {t(`lesson.status.${status.toLowerCase()}`)}
+                    {count.total > 0 ? `${count.completed}/${count.total}` : t("lesson.status.pending")}
                   </span>
                 </Link>
               </li>

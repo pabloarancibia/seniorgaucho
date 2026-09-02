@@ -67,13 +67,19 @@ export const api = {
       body: JSON.stringify({ completed }),
     }),
 
-  getPracticeCodeSnippet: (lessonId: string, topicSlug: string, language: CodeLanguage) =>
+  getPracticeCodeSnippet: (lessonId: string, topicSlug: string, exerciseId: string, language: CodeLanguage) =>
     request<PracticeCodeSnippet | null>(
-      `/lessons/${lessonId}/practice-code-snippets/${encodeURIComponent(topicSlug)}/${language}`
+      `/lessons/${lessonId}/practice-code-snippets/${encodeURIComponent(topicSlug)}/${encodeURIComponent(exerciseId)}/${language}`
     ),
-  savePracticeCodeSnippet: (lessonId: string, topicSlug: string, language: CodeLanguage, codeContent: string) =>
+  savePracticeCodeSnippet: (
+    lessonId: string,
+    topicSlug: string,
+    exerciseId: string,
+    language: CodeLanguage,
+    codeContent: string
+  ) =>
     request<PracticeCodeSnippet>(
-      `/lessons/${lessonId}/practice-code-snippets/${encodeURIComponent(topicSlug)}/${language}`,
+      `/lessons/${lessonId}/practice-code-snippets/${encodeURIComponent(topicSlug)}/${encodeURIComponent(exerciseId)}/${language}`,
       { method: "PUT", body: JSON.stringify({ codeContent }) }
     ),
 
