@@ -59,6 +59,36 @@ export const syllabus: SyllabusModule[] = [
         titleEn: "Live Coding Challenge — Extreme Refactoring and Core Algorithms",
         slug: "m0-0-5-refactorizacion-extrema-algoritmia-base",
       },
+      {
+        code: "0.6",
+        title: "Grafos y Recorridos de Matrices (BFS/DFS)",
+        titleEn: "Graphs and Matrix Traversal (BFS/DFS)",
+        slug: "m0-0-6-grafos-bfs-dfs-topological-sort",
+      },
+      {
+        code: "0.7",
+        title: "Sliding Window y Two Pointers",
+        titleEn: "Sliding Window and Two Pointers",
+        slug: null,
+      },
+      {
+        code: "0.8",
+        title: "Hash Maps, Sets y Conteo de Frecuencias",
+        titleEn: "Hash Maps, Sets, and Frequency Counting",
+        slug: null,
+      },
+      {
+        code: "0.9",
+        title: "Heaps y Colas de Prioridad",
+        titleEn: "Heaps and Priority Queues",
+        slug: null,
+      },
+      {
+        code: "0.10",
+        title: "Árboles Binarios y Recursión",
+        titleEn: "Binary Trees and Recursion",
+        slug: null,
+      },
     ],
   },
   {
