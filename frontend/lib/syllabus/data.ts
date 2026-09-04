@@ -69,7 +69,7 @@ export const syllabus: SyllabusModule[] = [
         code: "0.7",
         title: "Sliding Window y Two Pointers",
         titleEn: "Sliding Window and Two Pointers",
-        slug: null,
+        slug: "m0-0-7-sliding-window-two-pointers",
       },
       {
         code: "0.8",
